@@ -24,6 +24,7 @@ const STORAGE_KEY = 'twent_ultimo_usuario';
 let intervaloAtualizacao = null;
 let ultimaMusica = null;
 let usuarioAtual = null;
+let hlsInstance = null;
 
 // --- GARANTE QUE O VÍDEO NUNCA TENHA CONTROLES ---
 function bloquearControlesVideo(video) {
@@ -49,6 +50,55 @@ capaPrincipalVideoEl.addEventListener('dblclick', (e) => e.preventDefault());
 capaPrincipalVideoEl.addEventListener('pause', () => {
     capaPrincipalVideoEl.play().catch(() => {});
 });
+
+// --- TOCA HLS em qualquer navegador (com hls.js) ---
+function tocarVideoHLS(url) {
+    // Destroi instância anterior de HLS
+    if (hlsInstance) {
+        hlsInstance.destroy();
+        hlsInstance = null;
+    }
+
+    capaPrincipalVideoEl.style.display = 'block';
+    capaPrincipalImgEl.style.display = 'none';
+    bloquearControlesVideo(capaPrincipalVideoEl);
+
+    // Safari/iOS suportam HLS nativo
+    if (capaPrincipalVideoEl.canPlayType('application/vnd.apple.mpegurl')) {
+        capaPrincipalVideoEl.src = url;
+        capaPrincipalVideoEl.play().catch(() => {});
+        return;
+    }
+
+    // Chrome/Firefox/Edge usam hls.js
+    if (window.Hls && window.Hls.isSupported()) {
+        hlsInstance = new window.Hls({
+            enableWorker: true,
+            lowLatencyMode: false,
+            backBufferLength: 90
+        });
+        hlsInstance.loadSource(url);
+        hlsInstance.attachMedia(capaPrincipalVideoEl);
+        hlsInstance.on(window.Hls.Events.MANIFEST_PARSED, () => {
+            capaPrincipalVideoEl.play().catch(() => {});
+        });
+        hlsInstance.on(window.Hls.Events.ERROR, (event, data) => {
+            console.warn('Erro HLS:', data);
+            if (data.fatal) {
+                // Fallback: se o HLS falhar, mostra a imagem estática
+                if (capaPrincipalImgEl.src) {
+                    capaPrincipalVideoEl.style.display = 'none';
+                    capaPrincipalImgEl.style.display = 'block';
+                }
+            }
+        });
+        return;
+    }
+
+    // Último fallback
+    capaPrincipalVideoEl.src = url;
+    capaPrincipalVideoEl.play().catch(() => {});
+}
 
 async function carregarLastFm(userEspecifico = null) {
     const user = userEspecifico || usuarioAtual || inputBusca.value.trim();
@@ -78,23 +128,20 @@ async function carregarLastFm(userEspecifico = null) {
         musicaEl.textContent = data.track;
         artistaEl.textContent = data.artist;
 
-        if (data.video_url) {
-            capaPrincipalVideoEl.src = data.video_url;
-            capaPrincipalVideoEl.style.display = 'block';
-            capaPrincipalImgEl.style.display = 'none';
-
-            bloquearControlesVideo(capaPrincipalVideoEl);
-            capaPrincipalVideoEl.play().catch(() => {});
-        } else if (data.static_url) {
+        // Coloca a imagem estática primeiro (fallback visual)
+        if (data.static_url) {
             capaPrincipalImgEl.src = data.static_url;
+            capaImgEl.src = data.static_url;
+            capaImgEl.classList.add('visivel');
+        }
+
+        // Depois tenta tocar o vídeo
+        if (data.video_url) {
+            tocarVideoHLS(data.video_url);
+        } else if (data.static_url) {
             capaPrincipalImgEl.style.display = 'block';
             capaPrincipalVideoEl.style.display = 'none';
             capaPrincipalVideoEl.pause();
-        }
-
-        if (data.static_url) {
-            capaImgEl.src = data.static_url;
-            capaImgEl.classList.add('visivel');
         }
 
         if (data.dominant_color) {
