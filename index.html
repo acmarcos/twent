@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twent</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="tela" id="tela">
+        <img id="capa-img" src="" alt="">
+    </div>
+
+    <div class="painel" id="painel">
+
+        <div class="status-lastfm">
+            <img src="/last.svg" alt="Last.fm" class="icone-lastfm">
+            <span class="texto-lastfm"><span id="usuario-status">—</span> está ouvindo:</span>
+        </div>
+
+        <div class="capa-central" id="capa-central">
+            <video id="capa-principal-video" autoplay loop muted playsinline disablepictureinpicture controlslist="nodownload nofullscreen noremoteplayback noplaybackrate" style="display:none;"></video>
+            <img id="capa-principal-img" src="" alt="">
+            <img id="overlay-capa" src="/overlay.png" alt="">
+        </div>
+
+        <div class="info-musica">
+            <p id="album"></p>
+            <h1 id="musica"></h1>
+            <p id="artista"></p>
+        </div>
+
+    </div>
+
+    <div class="assistive" id="assistive">
+        <button class="assistive-btn" id="assistive-btn" aria-label="Menu"></button>
+        <div class="assistive-menu" id="assistive-menu">
+            <button class="assistive-opcao" id="opcao-pesquisar" aria-label="Pesquisar usuário">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+            <button class="assistive-opcao" id="opcao-ultimo" aria-label="Pesquisar último usuário">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+            </button>
+            <button class="assistive-opcao" id="opcao-captura" aria-label="Captura de tela">
+                <i class="fa-solid fa-camera"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="modal-pesquisa" id="modal-pesquisa">
+        <div class="modal-container">
+            <div class="modal-topo">
+                <button class="modal-voltar" id="modal-voltar" aria-label="Voltar">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div class="modal-conteudo">
+                    <input type="text" id="input-busca" placeholder="Usuário do Last.fm" autocomplete="off">
+                    <button id="btn-pesquisar-confirmar" aria-label="Confirmar">
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="/script.js"></script>
+</body>
+</html>
