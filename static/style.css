@@ -67,6 +67,14 @@ html, body {
     height: 100%;
     width: 100%;
     overflow: hidden;
+    touch-action: pan-x pan-y;
+    -ms-touch-action: pan-x pan-y;
+    overscroll-behavior: none;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
 }
 
 body {
@@ -468,7 +476,7 @@ body {
     outline: none;
     color: #fff;
     font-family: 'MinhaFonteMedium', system-ui, sans-serif;
-    font-size: 1rem;
+    font-size: 16px;
     padding: 0.6rem 0;
 }
 
@@ -524,7 +532,7 @@ body {
     }
 
     .modal-conteudo input {
-        font-size: 0.95rem;
+        font-size: 16px;
     }
 
     .modal-conteudo button {

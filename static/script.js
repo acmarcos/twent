@@ -26,6 +26,50 @@ let ultimaMusica = null;
 let usuarioAtual = null;
 let hlsInstance = null;
 
+// ============================================
+// BLOQUEIO DE ZOOM (3 camadas de defesa)
+// ============================================
+
+// Camada 1: bloqueia gesto de pinça (2 dedos)
+document.addEventListener('touchstart', (e) => {
+    if (e.touches.length > 1) {
+        e.preventDefault();
+    }
+}, { passive: false });
+
+// Camada 2: bloqueia duplo-toque (zoom rápido)
+let ultimoToque = 0;
+document.addEventListener('touchend', (e) => {
+    const agora = Date.now();
+    if (agora - ultimoToque <= 300) {
+        e.preventDefault();
+    }
+    ultimoToque = agora;
+}, { passive: false });
+
+// Camada 3: bloqueia gesto de pinça (evento específico)
+document.addEventListener('gesturestart', (e) => e.preventDefault());
+document.addEventListener('gesturechange', (e) => e.preventDefault());
+document.addEventListener('gestureend', (e) => e.preventDefault());
+
+// Camada 4: bloqueia zoom via Ctrl + scroll (desktop)
+document.addEventListener('wheel', (e) => {
+    if (e.ctrlKey) {
+        e.preventDefault();
+    }
+}, { passive: false });
+
+// Camada 5: bloqueia Ctrl + "+" / "-" / "0" (desktop)
+document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && (e.key === '+' || e.key === '-' || e.key === '=' || e.key === '0')) {
+        e.preventDefault();
+    }
+});
+
+// ============================================
+// FIM DO BLOQUEIO DE ZOOM
+// ============================================
+
 // --- GARANTE QUE O VÍDEO NUNCA TENHA CONTROLES ---
 function bloquearControlesVideo(video) {
     if (!video) return;
@@ -53,7 +97,6 @@ capaPrincipalVideoEl.addEventListener('pause', () => {
 
 // --- TOCA HLS em qualquer navegador (com hls.js) ---
 function tocarVideoHLS(url) {
-    // Destroi instância anterior de HLS
     if (hlsInstance) {
         hlsInstance.destroy();
         hlsInstance = null;
@@ -85,7 +128,6 @@ function tocarVideoHLS(url) {
         hlsInstance.on(window.Hls.Events.ERROR, (event, data) => {
             console.warn('Erro HLS:', data);
             if (data.fatal) {
-                // Fallback: se o HLS falhar, mostra a imagem estática
                 if (capaPrincipalImgEl.src) {
                     capaPrincipalVideoEl.style.display = 'none';
                     capaPrincipalImgEl.style.display = 'block';
@@ -95,7 +137,7 @@ function tocarVideoHLS(url) {
         return;
     }
 
-    // Último fallback
+    // Fallback
     capaPrincipalVideoEl.src = url;
     capaPrincipalVideoEl.play().catch(() => {});
 }
@@ -128,14 +170,12 @@ async function carregarLastFm(userEspecifico = null) {
         musicaEl.textContent = data.track;
         artistaEl.textContent = data.artist;
 
-        // Coloca a imagem estática primeiro (fallback visual)
         if (data.static_url) {
             capaPrincipalImgEl.src = data.static_url;
             capaImgEl.src = data.static_url;
             capaImgEl.classList.add('visivel');
         }
 
-        // Depois tenta tocar o vídeo
         if (data.video_url) {
             tocarVideoHLS(data.video_url);
         } else if (data.static_url) {
