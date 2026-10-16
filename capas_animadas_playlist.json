@@ -1,0 +1,119 @@
+[
+  {
+    "artist": "The Housemartins",
+    "track": "Build",
+    "album": "The People Who Grinned Themselves To Death",
+    "hls_master": "https://mvod.itunes.apple.com/itunes-assets/HLSVideo221/v4/97/73/2c/97732c14-fa27-4d67-d62b-b7e1672cacf4/P1461436987_default.m3u8",
+    "video_url": "https://mvod.itunes.apple.com/itunes-assets/HLSVideo221/v4/97/73/2c/97732c14-fa27-4d67-d62b-b7e1672cacf4/P1461436987_Anull_video_gr265_sdr_1080x1080.m3u8",
+    "resolucao": "1080x1080",
+    "apple_music_url": "https://music.apple.com/us/album/the-people-who-grinned-themselves-to-death/887379162?uo=4"
+  },
+  {
+    "artist": "Duran Duran",
+    "track": "A Matter of Feeling",
+    "album": "Notorious",
+    "hls_master": "https://mvod.itunes.apple.com/itunes-assets/HLSVideo211/v4/31/27/cd/3127cdb5-0f34-03e3-78a1-a37439aa5326/P873148012_default.m3u8",
+    "video_url": "https://mvod.itunes.apple.com/itunes-assets/HLSVideo211/v4/43/9e/e1/439ee13d-29af-87f2-663d-e63c18578825/P873148012_Anull_video_gr265_sdr_1080x1080.m3u8",
+    "resolucao": "1080x1080",
+    "apple_music_url": "https://music.apple.com/us/album/notorious-deluxe-edition/693606394?uo=4"
+  },
+  {
+    "artist": "Creed",
+    "track": "One Last Breath",
+    "album": "Weathered",
+    "hls_master": "https://mvod.itunes.apple.com/itunes-assets/HLSVideo211/v4/55/06/21/55062138-3cfd-7b58-4e09-3967f2c4e2fe/P1510813606_default.m3u8",
+    "video_url": "https://mvod.itunes.apple.com/itunes-assets/HLSVideo211/v4/55/06/21/55062138-3cfd-7b58-4e09-3967f2c4e2fe/P1510813606_Anull_video_gr265_sdr_1080x1080.m3u8",
+    "resolucao": "1080x1080",
+    "apple_music_url": "https://music.apple.com/us/album/weathered/1440738578?uo=4"
+  },
+  {
+    "artist": "Bonnie Tyler",
+    "track": "Total Eclipse of the Heart",
+    "album": "Faster Than the Speed of Night",
+    "hls_master": "https://mvod.itunes.apple.com/itunes-assets/HLSMusic116/v4/97/6b/8a/976b8ad1-41d4-01ae-06f0-4bce2b259165/P619530776_default.m3u8",
+    "video_url": "https://mvod.itunes.apple.com/itunes-assets/HLSMusic116/v4/68/26/ed/6826ed51-71c8-9280-ab7f-82f2d95d24a4/P619530776_Anull_video_gr265_sdr_1080x1080.m3u8",
+    "resolucao": "1080x1080",
+    "apple_music_url": "https://music.apple.com/us/album/faster-than-the-speed-of-night/1504111277?uo=4"
+  },
+  {
+    "artist": "Red Hot Chili Peppers",
+    "track": "Dani California",
+    "album": "Stadium Arcadium",
+    "hls_master": "https://mvod.itunes.apple.com/itunes-assets/HLSMusic126/v4/de/3c/9a/de3c9a86-5492-cfe4-68d6-d7c396cffbac/P394622303_default.m3u8",
+    "video_url": "https://mvod.itunes.apple.com/itunes-assets/HLSMusic126/v4/a4/09/14/a40914b8-23ce-310b-56ba-081627d276bb/P394622303_Anull_video_gr265_sdr_1080x1080_-.m3u8",
+    "resolucao": "1080x1080",
+    "apple_music_url": "https://music.apple.com/us/album/stadium-arcadium/945562992?uo=4"
+  },
+  {
+    "artist": "Chad Kroeger",
+    "track": "Hero (feat. Josey Scott)",
+    "album": "Hero (feat. Josey Scott)",
+    "hls_master": "https://mvod.itunes.apple.com/itunes-assets/HLSMusic112/v4/c5/00/ad/c500addb-2180-8e98-eefe-bcc0ceeb8edb/P501857934_default.m3u8",
+    "video_url": "https://mvod.itunes.apple.com/itunes-assets/HLSMusic112/v4/40/52/b8/4052b8d4-8ff6-204b-5d2c-96573857e64e/P501857934_Anull_video_gr265_sdr_1080x1080_-.m3u8",
+    "resolucao": "1080x1080",
+    "apple_music_url": "https://music.apple.com/us/album/all-the-right-reasons/214403406?uo=4"
+  },
+  {
+    "artist": "Metallica",
+    "track": "Nothing Else Matters",
+    "album": "Metallica",
+    "hls_master": "https://mvod.itunes.apple.com/itunes-assets/HLSMusic116/v4/91/ca/ca/91caca90-1da1-58ff-cb44-b37637f5f72a/P359493870_default.m3u8",
+    "video_url": "https://mvod.itunes.apple.com/itunes-assets/HLSMusic126/v4/94/66/b8/9466b80f-0497-53ae-91f7-2fc4682cd942/P359493870_Anull_video_gr265_sdr_1080x1080.m3u8",
+    "resolucao": "1080x1080",
+    "apple_music_url": "https://music.apple.com/us/album/metallica-remastered/1572046434?uo=4"
+  },
+  {
+    "artist": "Metallica",
+    "track": "Enter Sandman",
+    "album": "Metallica",
+    "hls_master": "https://mvod.itunes.apple.com/itunes-assets/HLSMusic116/v4/91/ca/ca/91caca90-1da1-58ff-cb44-b37637f5f72a/P359493870_default.m3u8",
+    "video_url": "https://mvod.itunes.apple.com/itunes-assets/HLSMusic126/v4/94/66/b8/9466b80f-0497-53ae-91f7-2fc4682cd942/P359493870_Anull_video_gr265_sdr_1080x1080.m3u8",
+    "resolucao": "1080x1080",
+    "apple_music_url": "https://music.apple.com/us/album/metallica-remastered/1572046434?uo=4"
+  },
+  {
+    "artist": "Shania Twain",
+    "track": "You're Still The One",
+    "album": "Come On Over",
+    "hls_master": "https://mvod.itunes.apple.com/itunes-assets/HLSMusic126/v4/f9/4f/3e/f94f3e56-8f1d-6bba-6cfb-4f8aa6baaae6/P359492718_default.m3u8",
+    "video_url": "https://mvod.itunes.apple.com/itunes-assets/HLSMusic116/v4/d3/fb/b5/d3fbb545-af96-dc37-74c3-fbf480ca4fdd/P359492718_Anull_video_gr265_sdr_1080x1080.m3u8",
+    "resolucao": "1080x1080",
+    "apple_music_url": "https://music.apple.com/us/album/come-on-over/1445668706?uo=4"
+  },
+  {
+    "artist": "Nickelback",
+    "track": "Never Gonna Be Alone",
+    "album": "Dark Horse",
+    "hls_master": "https://mvod.itunes.apple.com/itunes-assets/HLSMusic122/v4/6c/87/d4/6c87d434-6af3-fb6a-21bf-3698382bb851/P501859862_default.m3u8",
+    "video_url": "https://mvod.itunes.apple.com/itunes-assets/HLSMusic122/v4/62/e0/bc/62e0bc32-39d9-cf4a-fcab-5dc1a1b1d280/P501859862_Anull_video_gr265_sdr_1080x1080_-.m3u8",
+    "resolucao": "1080x1080",
+    "apple_music_url": "https://music.apple.com/us/album/dark-horse/296913938?uo=4"
+  },
+  {
+    "artist": "Nickelback",
+    "track": "Someday",
+    "album": "The Long Road",
+    "hls_master": "https://mvod.itunes.apple.com/itunes-assets/HLSMusic122/v4/18/80/ea/1880ea61-3aa4-4fb7-e6f8-388128ed289c/P501858098_default.m3u8",
+    "video_url": "https://mvod.itunes.apple.com/itunes-assets/HLSMusic122/v4/4d/c5/e0/4dc5e067-409d-302f-5d3d-f681b2bcaffa/P501858098_Anull_video_gr265_sdr_1080x1080_-.m3u8",
+    "resolucao": "1080x1080",
+    "apple_music_url": "https://music.apple.com/us/album/the-long-road/214468219?uo=4"
+  },
+  {
+    "artist": "Scorpions",
+    "track": "When The Smoke Is Going Down",
+    "album": "Blackout",
+    "hls_master": "https://mvod.itunes.apple.com/itunes-assets/HLSMusic126/v4/6a/22/ad/6a22adf1-d32c-b108-6c23-e1bec0e2c7c0/P576509199_default.m3u8",
+    "video_url": "https://mvod.itunes.apple.com/itunes-assets/HLSMusic126/v4/45/0e/9c/450e9cc6-067c-9dfd-439a-0479ff6c7869/P576509199_Anull_video_gr265_sdr_1080x1080.m3u8",
+    "resolucao": "1080x1080",
+    "apple_music_url": "https://music.apple.com/us/album/blackout/1440921750?uo=4"
+  },
+  {
+    "artist": "Aerosmith",
+    "track": "Dream On",
+    "album": "Aerosmith",
+    "hls_master": "https://mvod.itunes.apple.com/itunes-assets/HLSVideo211/v4/17/7f/ad/177fadf9-23e2-3906-c22b-cd5ae0dac71b/P1305536121_default.m3u8",
+    "video_url": "https://mvod.itunes.apple.com/itunes-assets/HLSVideo211/v4/17/7f/ad/177fadf9-23e2-3906-c22b-cd5ae0dac71b/P1305536121_Anull_video_gr265_sdr_1080x1080.m3u8",
+    "resolucao": "1080x1080",
+    "apple_music_url": "https://music.apple.com/us/album/aerosmith-legendary-expanded-edition/1886801848?uo=4"
+  }
+]

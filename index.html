@@ -42,6 +42,9 @@
             <button class="assistive-opcao" id="opcao-ultimo" aria-label="Pesquisar último usuário">
                 <i class="fa-solid fa-clock-rotate-left"></i>
             </button>
+            <button class="assistive-opcao" id="opcao-capas" aria-label="Escolher capa">
+                <i class="fa-solid fa-images"></i>
+            </button>
             <button class="assistive-opcao" id="opcao-captura" aria-label="Captura de tela">
                 <i class="fa-solid fa-camera"></i>
             </button>
@@ -61,6 +64,19 @@
                     </button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div class="modal-capas" id="modal-capas">
+        <div class="modal-capas-container">
+            <div class="modal-capas-topo">
+                <h2>Escolher capa</h2>
+                <button class="modal-capas-fechar" id="modal-capas-fechar" aria-label="Fechar">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <p class="modal-capas-info" id="modal-capas-info">Carregando...</p>
+            <div class="grade-capas" id="grade-capas"></div>
         </div>
     </div>
 

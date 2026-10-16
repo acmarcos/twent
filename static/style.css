@@ -206,8 +206,6 @@ body {
     transform: none;
 }
 
-/* --- Overlay PNG em cima da capa --- */
-
 #overlay-capa {
     position: absolute;
     inset: 0;
@@ -220,8 +218,6 @@ body {
     user-select: none;
     -webkit-user-drag: none;
 }
-
-/* --- Vídeo: sem controles, sem interação --- */
 
 #capa-principal-video {
     pointer-events: none;
@@ -505,6 +501,138 @@ body {
 }
 
 /* ============================================ */
+/* MODAL DE CAPAS */
+/* ============================================ */
+
+.modal-capas {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    z-index: 70;
+    display: none;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 2rem 1rem;
+    overflow-y: auto;
+}
+
+.modal-capas.ativo {
+    display: flex;
+}
+
+.modal-capas-container {
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.modal-capas-topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-capas-topo h2 {
+    color: #fff;
+    font-family: 'MinhaFonteBold', system-ui, sans-serif;
+    font-size: 1.2rem;
+}
+
+.modal-capas-fechar {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.modal-capas-fechar:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.modal-capas-info {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.85rem;
+    font-family: 'MinhaFonteRegular', sans-serif;
+}
+
+.grade-capas {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.75rem;
+}
+
+.capa-opcao {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.2s, transform 0.1s;
+    background: #1a1a1a;
+}
+
+.capa-opcao:hover {
+    transform: scale(1.03);
+}
+
+.capa-opcao.selecionada {
+    border-color: #fff;
+}
+
+.capa-opcao img,
+.capa-opcao video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    pointer-events: none;
+}
+
+.capa-badge {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #000;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'MinhaFonteBold', sans-serif;
+    z-index: 2;
+}
+
+.capa-album-nome {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+    color: #fff;
+    font-size: 0.7rem;
+    padding: 1.5rem 0.5rem 0.5rem;
+    font-family: 'MinhaFonteRegular', sans-serif;
+    text-align: left;
+    z-index: 2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ============================================ */
 /* RESPONSIVO */
 /* ============================================ */
 
@@ -538,5 +666,14 @@ body {
     .modal-conteudo button {
         width: 36px;
         height: 36px;
+    }
+
+    .modal-capas {
+        padding: 1.5rem 0.75rem;
+    }
+
+    .grade-capas {
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        gap: 0.5rem;
     }
 }

@@ -12,54 +12,50 @@ const assistiveEl = document.getElementById('assistive');
 const assistiveBtn = document.getElementById('assistive-btn');
 const opcaoPesquisar = document.getElementById('opcao-pesquisar');
 const opcaoUltimo = document.getElementById('opcao-ultimo');
+const opcaoCapas = document.getElementById('opcao-capas');
 const opcaoCaptura = document.getElementById('opcao-captura');
 const modalPesquisa = document.getElementById('modal-pesquisa');
 const modalVoltar = document.getElementById('modal-voltar');
 const inputBusca = document.getElementById('input-busca');
 const btnPesquisarConfirmar = document.getElementById('btn-pesquisar-confirmar');
 
+const modalCapas = document.getElementById('modal-capas');
+const modalCapasFechar = document.getElementById('modal-capas-fechar');
+const modalCapasInfo = document.getElementById('modal-capas-info');
+const gradeCapas = document.getElementById('grade-capas');
+
 const SERVER_URL = window.location.origin;
 const STORAGE_KEY = 'twent_ultimo_usuario';
+const STORAGE_CAPAS_CUSTOM = 'twent_capas_custom';
 
 let intervaloAtualizacao = null;
 let ultimaMusica = null;
 let usuarioAtual = null;
+let musicaAtual = null;
 let hlsInstance = null;
 
 // ============================================
-// BLOQUEIO DE ZOOM (3 camadas de defesa)
+// BLOQUEIO DE ZOOM
 // ============================================
-
-// Camada 1: bloqueia gesto de pinça (2 dedos)
 document.addEventListener('touchstart', (e) => {
-    if (e.touches.length > 1) {
-        e.preventDefault();
-    }
+    if (e.touches.length > 1) e.preventDefault();
 }, { passive: false });
 
-// Camada 2: bloqueia duplo-toque (zoom rápido)
 let ultimoToque = 0;
 document.addEventListener('touchend', (e) => {
     const agora = Date.now();
-    if (agora - ultimoToque <= 300) {
-        e.preventDefault();
-    }
+    if (agora - ultimoToque <= 300) e.preventDefault();
     ultimoToque = agora;
 }, { passive: false });
 
-// Camada 3: bloqueia gesto de pinça (evento específico)
 document.addEventListener('gesturestart', (e) => e.preventDefault());
 document.addEventListener('gesturechange', (e) => e.preventDefault());
 document.addEventListener('gestureend', (e) => e.preventDefault());
 
-// Camada 4: bloqueia zoom via Ctrl + scroll (desktop)
 document.addEventListener('wheel', (e) => {
-    if (e.ctrlKey) {
-        e.preventDefault();
-    }
+    if (e.ctrlKey) e.preventDefault();
 }, { passive: false });
 
-// Camada 5: bloqueia Ctrl + "+" / "-" / "0" (desktop)
 document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && (e.key === '+' || e.key === '-' || e.key === '=' || e.key === '0')) {
         e.preventDefault();
@@ -67,10 +63,8 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ============================================
-// FIM DO BLOQUEIO DE ZOOM
+// VÍDEO
 // ============================================
-
-// --- GARANTE QUE O VÍDEO NUNCA TENHA CONTROLES ---
 function bloquearControlesVideo(video) {
     if (!video) return;
     video.controls = false;
@@ -95,7 +89,6 @@ capaPrincipalVideoEl.addEventListener('pause', () => {
     capaPrincipalVideoEl.play().catch(() => {});
 });
 
-// --- TOCA HLS em qualquer navegador (com hls.js) ---
 function tocarVideoHLS(url) {
     if (hlsInstance) {
         hlsInstance.destroy();
@@ -106,14 +99,12 @@ function tocarVideoHLS(url) {
     capaPrincipalImgEl.style.display = 'none';
     bloquearControlesVideo(capaPrincipalVideoEl);
 
-    // Safari/iOS suportam HLS nativo
     if (capaPrincipalVideoEl.canPlayType('application/vnd.apple.mpegurl')) {
         capaPrincipalVideoEl.src = url;
         capaPrincipalVideoEl.play().catch(() => {});
         return;
     }
 
-    // Chrome/Firefox/Edge usam hls.js
     if (window.Hls && window.Hls.isSupported()) {
         hlsInstance = new window.Hls({
             enableWorker: true,
@@ -137,11 +128,146 @@ function tocarVideoHLS(url) {
         return;
     }
 
-    // Fallback
     capaPrincipalVideoEl.src = url;
     capaPrincipalVideoEl.play().catch(() => {});
 }
 
+// ============================================
+// CAPAS CUSTOMIZADAS
+// ============================================
+function carregarCapasCustom() {
+    try {
+        return JSON.parse(localStorage.getItem(STORAGE_CAPAS_CUSTOM) || '{}');
+    } catch {
+        return {};
+    }
+}
+
+function salvarCapasCustom(dados) {
+    localStorage.setItem(STORAGE_CAPAS_CUSTOM, JSON.stringify(dados));
+}
+
+function aplicarCapaCustom(artist, track) {
+    const chave = `${artist}::${track}`;
+    const custom = carregarCapasCustom()[chave];
+    if (!custom) return false;
+
+    if (custom.tipo === 'animada' && custom.url) {
+        tocarVideoHLS(custom.url);
+        return true;
+    } else if (custom.tipo === 'estatica' && custom.url) {
+        capaPrincipalImgEl.src = custom.url;
+        capaPrincipalImgEl.style.display = 'block';
+        capaPrincipalVideoEl.style.display = 'none';
+        capaPrincipalVideoEl.pause();
+        return true;
+    }
+    return false;
+}
+
+// ============================================
+// MODAL DE CAPAS
+// ============================================
+async function abrirModalCapas() {
+    if (!musicaAtual) {
+        alert('Nenhuma música tocando.');
+        return;
+    }
+
+    assistiveEl.classList.remove('aberto');
+    modalCapas.classList.add('ativo');
+    gradeCapas.innerHTML = '';
+    modalCapasInfo.textContent = 'Carregando capas...';
+
+    const { artist, track } = musicaAtual;
+
+    try {
+        const url = `${SERVER_URL}/api/capas-alternativas?artist=${encodeURIComponent(artist)}&track=${encodeURIComponent(track)}`;
+        const resp = await fetch(url);
+        const capas = await resp.json();
+
+        if (!Array.isArray(capas) || capas.length === 0) {
+            modalCapasInfo.textContent = 'Nenhuma capa alternativa encontrada.';
+            return;
+        }
+
+        modalCapasInfo.textContent = `${capas.length} capas encontradas. Toque numa pra escolher.`;
+
+        const custom = carregarCapasCustom();
+        const chave = `${artist}::${track}`;
+        const escolhidaAtual = custom[chave];
+        const urlAtual = escolhidaAtual ? escolhidaAtual.url : null;
+
+        capas.forEach((c) => {
+            const div = document.createElement('div');
+            div.className = 'capa-opcao';
+
+            if (urlAtual && (urlAtual === c.video_url || urlAtual === c.static_url)) {
+                div.classList.add('selecionada');
+            }
+
+            if (c.tem_animada && c.video_url) {
+                const video = document.createElement('video');
+                video.src = c.video_url;
+                video.autoplay = true;
+                video.loop = true;
+                video.muted = true;
+                video.playsInline = true;
+                video.setAttribute('disablepictureinpicture', '');
+                video.setAttribute('controlslist', 'nodownload nofullscreen noremoteplayback');
+                div.appendChild(video);
+
+                const badge = document.createElement('div');
+                badge.className = 'capa-badge';
+                badge.textContent = 'ANIMADA';
+                div.appendChild(badge);
+            } else {
+                const img = document.createElement('img');
+                img.src = c.static_url;
+                img.alt = c.album;
+                div.appendChild(img);
+            }
+
+            const nome = document.createElement('div');
+            nome.className = 'capa-album-nome';
+            nome.textContent = c.album || 'Sem nome';
+            div.appendChild(nome);
+
+            div.addEventListener('click', () => {
+                gradeCapas.querySelectorAll('.capa-opcao').forEach(el => el.classList.remove('selecionada'));
+                div.classList.add('selecionada');
+
+                const dados = carregarCapasCustom();
+                if (c.tem_animada && c.video_url) {
+                    dados[chave] = { tipo: 'animada', url: c.video_url };
+                } else {
+                    dados[chave] = { tipo: 'estatica', url: c.static_url };
+                }
+                salvarCapasCustom(dados);
+                aplicarCapaCustom(artist, track);
+            });
+
+            gradeCapas.appendChild(div);
+        });
+    } catch (error) {
+        console.error('Erro ao buscar capas:', error);
+        modalCapasInfo.textContent = 'Erro ao buscar capas.';
+    }
+}
+
+modalCapasFechar.addEventListener('click', () => {
+    modalCapas.classList.remove('ativo');
+});
+
+modalCapas.addEventListener('click', (e) => {
+    if (e.target === modalCapas) {
+        modalCapas.classList.remove('ativo');
+    }
+});
+
+// ============================================
+// LAST.FM
+// ============================================
 async function carregarLastFm(userEspecifico = null) {
     const user = userEspecifico || usuarioAtual || inputBusca.value.trim();
     if (!user) return;
@@ -159,9 +285,7 @@ async function carregarLastFm(userEspecifico = null) {
         }
 
         const assinaturaAtual = `${data.artist}::${data.track}::${data.album}`;
-        if (assinaturaAtual === ultimaMusica) {
-            return;
-        }
+        if (assinaturaAtual === ultimaMusica) return;
         ultimaMusica = assinaturaAtual;
 
         painelEl.classList.add('visivel');
@@ -170,18 +294,24 @@ async function carregarLastFm(userEspecifico = null) {
         musicaEl.textContent = data.track;
         artistaEl.textContent = data.artist;
 
+        musicaAtual = { artist: data.artist, track: data.track };
+
         if (data.static_url) {
             capaPrincipalImgEl.src = data.static_url;
             capaImgEl.src = data.static_url;
             capaImgEl.classList.add('visivel');
         }
 
-        if (data.video_url) {
-            tocarVideoHLS(data.video_url);
-        } else if (data.static_url) {
-            capaPrincipalImgEl.style.display = 'block';
-            capaPrincipalVideoEl.style.display = 'none';
-            capaPrincipalVideoEl.pause();
+        const temCustom = aplicarCapaCustom(data.artist, data.track);
+
+        if (!temCustom) {
+            if (data.video_url) {
+                tocarVideoHLS(data.video_url);
+            } else if (data.static_url) {
+                capaPrincipalImgEl.style.display = 'block';
+                capaPrincipalVideoEl.style.display = 'none';
+                capaPrincipalVideoEl.pause();
+            }
         }
 
         if (data.dominant_color) {
@@ -202,9 +332,7 @@ function iniciarAtualizacaoAutomatica(user) {
         return;
     }
 
-    if (intervaloAtualizacao) {
-        clearInterval(intervaloAtualizacao);
-    }
+    if (intervaloAtualizacao) clearInterval(intervaloAtualizacao);
 
     ultimaMusica = null;
     carregarLastFm(alvo);
@@ -214,12 +342,13 @@ function iniciarAtualizacaoAutomatica(user) {
     }, 10000);
 }
 
-// --- CAPTURA DE TELA ---
+// ============================================
+// CAPTURA DE TELA
+// ============================================
 async function capturarTela() {
     try {
         assistiveEl.classList.remove('aberto');
         assistiveEl.style.visibility = 'hidden';
-
         await new Promise(r => setTimeout(r, 100));
 
         const canvas = await html2canvas(document.body, {
@@ -242,8 +371,9 @@ async function capturarTela() {
     }
 }
 
-// --- EVENTOS ---
-
+// ============================================
+// EVENTOS
+// ============================================
 assistiveBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     assistiveEl.classList.toggle('aberto');
@@ -265,15 +395,18 @@ opcaoPesquisar.addEventListener('click', (e) => {
 opcaoUltimo.addEventListener('click', (e) => {
     e.stopPropagation();
     assistiveEl.classList.remove('aberto');
-
     const ultimo = localStorage.getItem(STORAGE_KEY);
     if (!ultimo) {
         alert('Nenhum usuário pesquisado ainda.');
         return;
     }
-
     inputBusca.value = ultimo;
     iniciarAtualizacaoAutomatica(ultimo);
+});
+
+opcaoCapas.addEventListener('click', (e) => {
+    e.stopPropagation();
+    abrirModalCapas();
 });
 
 opcaoCaptura.addEventListener('click', (e) => {
@@ -306,7 +439,9 @@ modalVoltar.addEventListener('click', (e) => {
     inputBusca.value = '';
 });
 
-// --- ARRASTAR O BOTÃO FLUTUANTE ---
+// ============================================
+// ARRASTAR BOTÃO FLUTUANTE
+// ============================================
 let arrastando = false;
 let offsetX, offsetY;
 

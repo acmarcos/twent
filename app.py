@@ -28,6 +28,7 @@ LASTFM_API_KEY = os.getenv("LASTFM_API_KEY")
 
 cache_capas = {}
 cache_aritra = {}
+cache_capas_alternativas = {}
 
 ARITRA_API = "https://api.aritra.ovh/v1"
 
@@ -66,7 +67,6 @@ def calcular_cor_dominante(url_imagem):
         return {"r": 40, "g": 40, "b": 40}
 
 def buscar_url_apple_music(artist, album):
-    """Busca a URL do álbum no Apple Music usando o iTunes Search API."""
     try:
         itunes_url = "https://itunes.apple.com/search"
         params = {
@@ -84,11 +84,9 @@ def buscar_url_apple_music(artist, album):
     return None
 
 def extrair_variante_hls(hls_url, resolucao_desejada=None):
-    """Baixa o manifesto HLS e extrai a URL da melhor variante."""
     try:
         resp = requests.get(hls_url, timeout=10)
         if resp.status_code != 200:
-            print(f"Erro ao baixar HLS: {resp.status_code}")
             return None
 
         linhas = resp.text.split('\n')
@@ -126,7 +124,6 @@ def extrair_variante_hls(hls_url, resolucao_desejada=None):
     return None
 
 def buscar_capa_animada_aritra(artist, album):
-    """Busca a capa animada na API do aritra.ovh, priorizando 1080x1080."""
     chave = f"{artist}::{album}".lower()
     if chave in cache_aritra:
         entrada = cache_aritra[chave]
@@ -137,14 +134,12 @@ def buscar_capa_animada_aritra(artist, album):
 
     apple_url = buscar_url_apple_music(artist, album)
     if not apple_url:
-        print(f"Não achou URL do Apple Music para {artist} - {album}")
         cache_aritra[chave] = {"video_url": None, "timestamp": time.time()}
         return None
 
     try:
         resp_covers = requests.get(f"{ARITRA_API}/covers", params={"url": apple_url}, timeout=15)
         if resp_covers.status_code != 200:
-            print(f"covers status: {resp_covers.status_code}")
             cache_aritra[chave] = {"video_url": None, "timestamp": time.time()}
             return None
 
@@ -153,11 +148,8 @@ def buscar_capa_animada_aritra(artist, album):
         hls_url = master.get("square") or master.get("tall")
 
         if not hls_url:
-            print(f"covers não retornou master.square: {list(master.keys())}")
             cache_aritra[chave] = {"video_url": None, "timestamp": time.time()}
             return None
-
-        print(f"Manifesto HLS: {hls_url}")
 
         video_url = extrair_variante_hls(hls_url, "1080x1080")
         if not video_url:
@@ -166,8 +158,6 @@ def buscar_capa_animada_aritra(artist, album):
             video_url = extrair_variante_hls(hls_url, "540x540")
         if not video_url:
             video_url = extrair_variante_hls(hls_url)
-
-        print(f"URL final do vídeo: {video_url}")
 
     except Exception as e:
         print(f"Erro ao consultar aritra.ovh: {e}")
@@ -245,6 +235,93 @@ def servir_overlay():
 @app.route('/fonts/<path:nome>')
 def servir_font(nome):
     return send_from_directory('static/fonts', nome)
+
+@app.route('/api/capas-alternativas')
+def capas_alternativas():
+    """Retorna todas as capas (estáticas e animadas) encontradas para uma música."""
+    artist = request.args.get('artist', '')
+    track = request.args.get('track', '')
+    if not artist or not track:
+        return jsonify({"error": "artist e track obrigatórios"}), 400
+
+    chave_cache = f"{artist}::{track}".lower()
+    if chave_cache in cache_capas_alternativas:
+        entrada = cache_capas_alternativas[chave_cache]
+        if time.time() - entrada["timestamp"] < 3600:
+            return jsonify(entrada["resultados"])
+
+    resultados = []
+    vistos = set()
+
+    try:
+        itunes_url = "https://itunes.apple.com/search"
+        params = {
+            "term": f"{artist} {track}",
+            "media": "music",
+            "entity": "album",
+            "limit": 20
+        }
+        resp = requests.get(itunes_url, params=params, timeout=10)
+        data = resp.json()
+
+        for item in data.get("results", []):
+            album = item.get("collectionName", "")
+            artwork = item.get("artworkUrl100", "")
+            apple_url = item.get("collectionViewUrl", "")
+
+            if not artwork:
+                continue
+
+            artwork = artwork.replace("100x100", "1200x1200")
+
+            chave_art = artwork
+            if chave_art in vistos:
+                continue
+            vistos.add(chave_art)
+
+            # Verifica se tem capa animada no aritra
+            video_url = None
+            if apple_url:
+                try:
+                    resp_covers = requests.get(
+                        f"{ARITRA_API}/covers",
+                        params={"url": apple_url},
+                        timeout=10
+                    )
+                    if resp_covers.status_code == 200:
+                        covers_data = resp_covers.json()
+                        master = covers_data.get("master", {})
+                        hls = master.get("square") or master.get("tall")
+                        if hls:
+                            video_url = extrair_variante_hls(hls, "1080x1080")
+                            if not video_url:
+                                video_url = extrair_variante_hls(hls, "720x720")
+                            if not video_url:
+                                video_url = extrair_variante_hls(hls, "540x540")
+                            if not video_url:
+                                video_url = extrair_variante_hls(hls)
+                except Exception as e:
+                    print(f"  Erro ao consultar aritra para {album}: {e}")
+
+            resultados.append({
+                "album": album,
+                "static_url": artwork,
+                "video_url": video_url,
+                "tem_animada": bool(video_url)
+            })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    # Ordena: animadas primeiro
+    resultados.sort(key=lambda x: (not x["tem_animada"], x["album"]))
+
+    cache_capas_alternativas[chave_cache] = {
+        "resultados": resultados,
+        "timestamp": time.time()
+    }
+
+    return jsonify(resultados)
 
 @app.route('/api/diagnostico')
 def diagnostico():
@@ -341,14 +418,12 @@ def lastfm_now_playing():
                 response = requests.get(lastfm_url, params=params, timeout=10)
                 if response.status_code == 200:
                     break
-                print(f"Tentativa {tentativa + 1} falhou com status {response.status_code}")
                 time.sleep(1)
-            except requests.RequestException as e:
-                print(f"Tentativa {tentativa + 1} falhou: {e}")
+            except requests.RequestException:
                 time.sleep(1)
 
         if not response or response.status_code != 200:
-            return jsonify({"error": "Last.fm indisponível no momento. Tente de novo em alguns segundos."}), 503
+            return jsonify({"error": "Last.fm indisponível no momento."}), 503
 
         data = response.json()
 
