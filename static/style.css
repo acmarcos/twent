@@ -651,18 +651,14 @@ body.visual-capa-cheia .painel {
     display: none !important;
 }
 
-/* --- Capa a 70% centralizada no topo --- */
+/* --- Capa ocupando 70% da altura --- */
 
 .capa-cheia-topo {
     position: absolute;
     top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 70vw;
-    height: 70vw;
-    max-height: 70vh;
-    max-width: 70vh;
-    aspect-ratio: 1;
+    left: 0;
+    right: 0;
+    height: 70vh;
     overflow: hidden;
     z-index: 1;
     background: #1a1a1a;
@@ -679,7 +675,7 @@ body.visual-capa-cheia .painel {
     left: 0;
 }
 
-/* --- Gradiente por cima da capa (parte de baixo) --- */
+/* --- Gradiente por cima da capa --- */
 
 .capa-cheia-gradiente {
     position: absolute;
@@ -697,11 +693,11 @@ body.visual-capa-cheia .painel {
     );
 }
 
-/* --- Informações no canto inferior esquerdo --- */
+/* --- Informações acima do botão assistente --- */
 
 .capa-cheia-info {
     position: absolute;
-    bottom: 5rem;
+    bottom: 6rem;
     left: 2rem;
     right: 2rem;
     z-index: 3;
@@ -838,7 +834,7 @@ body.visual-capa-cheia .painel {
     }
 
     .capa-cheia-info {
-        bottom: 4rem;
+        bottom: 5.5rem;
         left: 1rem;
         right: 1rem;
     }
