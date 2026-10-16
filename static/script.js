@@ -131,7 +131,7 @@ bloquearControlesVideo(capaCheiaVideoEl);
 });
 
 // ============================================
-// TOCAR HLS EM UM ELEMENTO <video> QUALQUER
+// TOCAR HLS
 // ============================================
 function tocarHLS(videoEl, url, onHlsInstance) {
     if (!videoEl) return;
@@ -210,7 +210,7 @@ function tocarCapaCheia(staticUrl, videoUrl) {
 }
 
 // ============================================
-// DADOS ATUAIS DA MÚSICA
+// DADOS ATUAIS
 // ============================================
 let dadosMusicaAtual = null;
 
@@ -229,7 +229,6 @@ function atualizarPainelCapaCheia(data) {
     musicaCheioEl.textContent = data.track || '';
     artistaCheioEl.textContent = data.artist || '';
 
-    // Cor dominante como fundo do painel
     if (data.dominant_color) {
         const { r, g, b } = data.dominant_color;
         const fator = 0.5;
@@ -451,15 +450,12 @@ async function carregarLastFm(userEspecifico = null) {
             const gF = Math.round(g * fator);
             const bF = Math.round(b * fator);
 
-            // Fundo do modo padrão
             telaEl.style.backgroundColor = `rgb(${rF}, ${gF}, ${bF})`;
 
-            // Variáveis CSS
             document.documentElement.style.setProperty('--cor-r', rF);
             document.documentElement.style.setProperty('--cor-g', gF);
             document.documentElement.style.setProperty('--cor-b', bF);
 
-            // Fundo sólido do modo capa cheia
             if (painelCapaCheiaEl) {
                 painelCapaCheiaEl.style.backgroundColor = `rgb(${rF}, ${gF}, ${bF})`;
             }
