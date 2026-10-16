@@ -1,4 +1,638 @@
 /* ============================================ */
+/* FONTES PERSONALIZADAS */
+/* ============================================ */
+
+@font-face {
+    font-family: 'MinhaFonteThin';
+    src: url('fonts/thin.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'MinhaFonteRegular';
+    src: url('fonts/regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'MinhaFonteMedium';
+    src: url('fonts/medium.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'MinhaFonteBold';
+    src: url('fonts/bold.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'MinhaFonteHeavy';
+    src: url('fonts/heavy.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* ============================================ */
+/* VARIÁVEIS */
+/* ============================================ */
+
+:root {
+    --capa-tamanho: 340px;
+    --borda-capa: 40px;
+    --titulo-tamanho: 1.5rem;
+    --artista-tamanho: 0.9rem;
+    --ouvindo-tamanho: 0.8rem;
+    --album-tamanho: 0.8rem;
+    --painel-gap: 1rem;
+    --painel-pad: 0;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    touch-action: pan-x pan-y;
+    -ms-touch-action: pan-x pan-y;
+    overscroll-behavior: none;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+body {
+    background: #000;
+    font-family: 'MinhaFonteRegular', system-ui, -apple-system, sans-serif;
+}
+
+.tela {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #0a0a0a;
+    overflow: hidden;
+    z-index: 0;
+    transition: background-color 0.8s ease;
+    filter: saturate(1.6) brightness(1.15);
+}
+
+#capa-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    filter: blur(80px) saturate(3.5) brightness(0.55);
+    transform: scale(1.3);
+    opacity: 0;
+    transition: opacity 0.8s ease;
+    mix-blend-mode: overlay;
+}
+
+#capa-img.visivel {
+    opacity: 1;
+}
+
+.painel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--painel-gap);
+    padding: var(--painel-pad);
+    width: var(--capa-tamanho);
+    max-width: 100%;
+}
+
+.painel.visivel {
+    display: flex;
+}
+
+/* ============================================ */
+/* STATUS DO LAST.FM */
+/* ============================================ */
+
+.status-lastfm {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    width: 100%;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.icone-lastfm {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    object-fit: contain;
+    display: block;
+    filter: brightness(0) invert(1);
+    position: relative;
+    top: 0px;
+}
+
+.texto-lastfm {
+    flex: 1;
+    min-width: 0;
+    font-family: 'MinhaFonteMedium', system-ui, sans-serif;
+    font-size: var(--ouvindo-tamanho);
+    line-height: 1.3;
+    font-weight: normal;
+    color: rgba(255, 255, 255, 0.75);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+}
+
+#usuario-status {
+    font-family: 'MinhaFonteBold', system-ui, sans-serif;
+    font-weight: normal;
+    color: #fff;
+}
+
+/* ============================================ */
+/* CAPA */
+/* ============================================ */
+
+.capa-central {
+    width: var(--capa-tamanho);
+    height: var(--capa-tamanho);
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--borda-capa);
+    background: #1a1a1a;
+    align-self: center;
+    flex-shrink: 0;
+}
+
+#capa-principal-video,
+#capa-principal-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    border-radius: var(--borda-capa);
+    transform: none;
+}
+
+#overlay-capa {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: var(--borda-capa);
+    pointer-events: none;
+    z-index: 3;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+#capa-principal-video {
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}
+
+#capa-principal-video::-webkit-media-controls,
+#capa-principal-video::-webkit-media-controls-enclosure,
+#capa-principal-video::-webkit-media-controls-panel,
+#capa-principal-video::-webkit-media-controls-play-button,
+#capa-principal-video::-webkit-media-controls-start-playback-button,
+#capa-principal-video::-webkit-media-controls-overlay-play-button,
+#capa-principal-video::-webkit-media-controls-picture-in-picture-button,
+#capa-principal-video::-webkit-media-controls-fullscreen-button,
+#capa-principal-video::-webkit-media-controls-download-button,
+#capa-principal-video::-webkit-media-controls-toggle-closed-captions-button,
+#capa-principal-video::-webkit-media-controls-volume-slider,
+#capa-principal-video::-webkit-media-controls-mute-button {
+    display: none !important;
+    -webkit-appearance: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* ============================================ */
+/* INFORMAÇÕES DA MÚSICA */
+/* ============================================ */
+
+.info-musica {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    gap: 2px;
+    width: 100%;
+    padding: 0;
+}
+
+.info-musica #album {
+    font-family: 'MinhaFonteMedium', system-ui, sans-serif;
+    font-size: var(--album-tamanho);
+    line-height: 1.3;
+    font-weight: normal;
+    color: rgba(255, 255, 255, 0.7);
+    width: 100%;
+    max-width: 100%;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to right, #000 90%, transparent 100%);
+    mask-image: linear-gradient(to right, #000 90%, transparent 100%);
+    letter-spacing: 0.02em;
+}
+
+.info-musica #album:empty {
+    display: none;
+}
+
+.info-musica h1 {
+    font-family: 'MinhaFonteHeavy', system-ui, sans-serif;
+    font-size: var(--titulo-tamanho);
+    line-height: 1.15;
+    font-weight: normal;
+    letter-spacing: -0.02em;
+    color: #fff;
+    width: 100%;
+    max-width: 100%;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to right, #000 90%, transparent 100%);
+    mask-image: linear-gradient(to right, #000 90%, transparent 100%);
+}
+
+.info-musica #artista {
+    font-family: 'MinhaFonteRegular', system-ui, sans-serif;
+    font-size: var(--artista-tamanho);
+    line-height: 1.3;
+    font-weight: normal;
+    color: rgba(255, 255, 255, 0.75);
+    width: 100%;
+    max-width: 100%;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to right, #000 90%, transparent 100%);
+    mask-image: linear-gradient(to right, #000 90%, transparent 100%);
+}
+
+/* ============================================ */
+/* BOTÃO FLUTUANTE */
+/* ============================================ */
+
+.assistive {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 50;
+    user-select: none;
+    touch-action: none;
+}
+
+.assistive-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(24px) saturate(1.5);
+    -webkit-backdrop-filter: blur(24px) saturate(1.5);
+    cursor: pointer;
+    transition: background 0.2s, transform 0.3s;
+}
+
+.assistive-btn:hover {
+    background: rgba(255, 255, 255, 0.22);
+}
+
+.assistive.aberto .assistive-btn {
+    transform: rotate(45deg);
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.assistive-menu {
+    position: absolute;
+    bottom: 60px;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    opacity: 0;
+    transform: translateY(20px) scale(0.9);
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.assistive.aberto .assistive-menu {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+.assistive-opcao {
+    width: 48px;
+    height: 48px;
+    border-radius: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(24px) saturate(1.5);
+    -webkit-backdrop-filter: blur(24px) saturate(1.5);
+    color: #fff;
+    font-size: 1.05rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.assistive-opcao:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.assistive-opcao:active {
+    transform: scale(0.96);
+}
+
+/* ============================================ */
+/* MODAL DE PESQUISA */
+/* ============================================ */
+
+.modal-pesquisa {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    z-index: 60;
+    display: none;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 2rem 1rem 1rem;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.modal-pesquisa.ativo {
+    display: flex;
+}
+
+.modal-container {
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    box-sizing: border-box;
+}
+
+.modal-topo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.modal-voltar {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.2s;
+}
+
+.modal-voltar:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.modal-conteudo {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(30, 30, 30, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 14px;
+    padding: 0.4rem 0.4rem 0.4rem 1rem;
+    box-sizing: border-box;
+    min-width: 0;
+}
+
+.modal-conteudo input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #fff;
+    font-family: 'MinhaFonteMedium', system-ui, sans-serif;
+    font-size: 16px;
+    padding: 0.6rem 0;
+}
+
+.modal-conteudo input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.modal-conteudo button {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: none;
+    background: #fff;
+    color: #000;
+    cursor: pointer;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+
+.modal-conteudo button:hover {
+    background: #e0e0e0;
+}
+
+/* ============================================ */
+/* MODAL DE CAPAS */
+/* ============================================ */
+
+.modal-capas {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    z-index: 70;
+    display: none;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 2rem 1rem;
+    overflow-y: auto;
+}
+
+.modal-capas.ativo {
+    display: flex;
+}
+
+.modal-capas-container {
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.modal-capas-topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-capas-topo h2 {
+    color: #fff;
+    font-family: 'MinhaFonteBold', system-ui, sans-serif;
+    font-size: 1.2rem;
+}
+
+.modal-capas-fechar {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.modal-capas-fechar:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.modal-capas-info {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.85rem;
+    font-family: 'MinhaFonteRegular', sans-serif;
+}
+
+.grade-capas {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.75rem;
+}
+
+.capa-opcao {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.2s, transform 0.1s;
+    background: #1a1a1a;
+}
+
+.capa-opcao:hover {
+    transform: scale(1.03);
+}
+
+.capa-opcao.selecionada {
+    border-color: #fff;
+}
+
+.capa-opcao img,
+.capa-opcao video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    pointer-events: none;
+}
+
+.capa-badge {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #000;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'MinhaFonteBold', sans-serif;
+    z-index: 2;
+}
+
+.capa-album-nome {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+    color: #fff;
+    font-size: 0.7rem;
+    padding: 1.5rem 0.5rem 0.5rem;
+    font-family: 'MinhaFonteRegular', sans-serif;
+    text-align: left;
+    z-index: 2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ============================================ */
 /* VISUAL CAPA CHEIA                            */
 /* ============================================ */
 
@@ -17,8 +651,6 @@ body.visual-capa-cheia .painel-capa-cheia {
 body.visual-capa-cheia .painel {
     display: none !important;
 }
-
-/* --- Metade de cima: capa --- */
 
 .capa-cheia-topo {
     position: absolute;
@@ -42,8 +674,6 @@ body.visual-capa-cheia .painel {
     left: 0;
 }
 
-/* --- Metade de baixo: gradiente --- */
-
 .capa-cheia-gradiente {
     position: absolute;
     bottom: 0;
@@ -58,8 +688,6 @@ body.visual-capa-cheia .painel {
         rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 1) 100%
     );
 }
-
-/* --- Informações na transição --- */
 
 .capa-cheia-info {
     position: absolute;
@@ -126,8 +754,6 @@ body.visual-capa-cheia .painel {
     overflow: hidden;
 }
 
-/* Esconde os controles do vídeo na capa cheia */
-
 #capa-cheia-video {
     pointer-events: none;
     user-select: none;
@@ -151,4 +777,54 @@ body.visual-capa-cheia .painel {
     -webkit-appearance: none !important;
     opacity: 0 !important;
     pointer-events: none !important;
+}
+
+/* ============================================ */
+/* RESPONSIVO */
+/* ============================================ */
+
+@media (max-width: 420px) {
+    :root {
+        --capa-tamanho: 300px;
+        --titulo-tamanho: 1.3rem;
+        --artista-tamanho: 0.85rem;
+        --ouvindo-tamanho: 0.75rem;
+        --album-tamanho: 0.75rem;
+    }
+
+    .modal-pesquisa {
+        padding: 1.5rem 1rem 1rem;
+    }
+
+    .modal-voltar {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+    }
+
+    .modal-conteudo {
+        padding: 0.3rem 0.3rem 0.3rem 0.8rem;
+    }
+
+    .modal-conteudo input {
+        font-size: 16px;
+    }
+
+    .modal-conteudo button {
+        width: 36px;
+        height: 36px;
+    }
+
+    .modal-capas {
+        padding: 1.5rem 0.75rem;
+    }
+
+    .grade-capas {
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        gap: 0.5rem;
+    }
+
+    .capa-cheia-info {
+        padding: 0 1rem;
+    }
 }
