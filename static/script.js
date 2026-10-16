@@ -1,19 +1,34 @@
 const capaImgEl = document.getElementById('capa-img');
+
+// Painel padrão
 const capaPrincipalVideoEl = document.getElementById('capa-principal-video');
 const capaPrincipalImgEl = document.getElementById('capa-principal-img');
 const painelEl = document.getElementById('painel');
-const telaEl = document.getElementById('tela');
 const usuarioStatusEl = document.getElementById('usuario-status');
 const albumEl = document.getElementById('album');
 const musicaEl = document.getElementById('musica');
 const artistaEl = document.getElementById('artista');
+
+// Painel capa cheia
+const painelCapaCheiaEl = document.getElementById('painel-capa-cheia');
+const capaCheiaVideoEl = document.getElementById('capa-cheia-video');
+const capaCheiaImgEl = document.getElementById('capa-cheia-img');
+const capaCheiaGradienteEl = document.getElementById('capa-cheia-gradiente');
+const usuarioStatusCheioEl = document.getElementById('usuario-status-cheio');
+const albumCheioEl = document.getElementById('album-cheio');
+const musicaCheioEl = document.getElementById('musica-cheio');
+const artistaCheioEl = document.getElementById('artista-cheio');
+
+const telaEl = document.getElementById('tela');
 
 const assistiveEl = document.getElementById('assistive');
 const assistiveBtn = document.getElementById('assistive-btn');
 const opcaoPesquisar = document.getElementById('opcao-pesquisar');
 const opcaoUltimo = document.getElementById('opcao-ultimo');
 const opcaoCapas = document.getElementById('opcao-capas');
+const opcaoVisual = document.getElementById('opcao-visual');
 const opcaoCaptura = document.getElementById('opcao-captura');
+
 const modalPesquisa = document.getElementById('modal-pesquisa');
 const modalVoltar = document.getElementById('modal-voltar');
 const inputBusca = document.getElementById('input-busca');
@@ -27,12 +42,15 @@ const gradeCapas = document.getElementById('grade-capas');
 const SERVER_URL = window.location.origin;
 const STORAGE_KEY = 'twent_ultimo_usuario';
 const STORAGE_CAPAS_CUSTOM = 'twent_capas_custom';
+const STORAGE_VISUAL = 'twent_visual';
 
 let intervaloAtualizacao = null;
 let ultimaMusica = null;
 let usuarioAtual = null;
 let musicaAtual = null;
 let hlsInstance = null;
+let hlsCheiaInstance = null;
+let visualAtual = 'padrao'; // 'padrao' ou 'capa-cheia'
 
 // ============================================
 // BLOQUEIO DE ZOOM
@@ -63,7 +81,31 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ============================================
-// VÍDEO
+// VISUAL
+// ============================================
+function aplicarVisual(visual) {
+    visualAtual = visual;
+    localStorage.setItem(STORAGE_VISUAL, visual);
+
+    if (visual === 'capa-cheia') {
+        document.body.classList.add('visual-capa-cheia');
+        // Sincroniza com a música atual
+        if (musicaAtual) {
+            const dadosAtuais = obterDadosAtuais();
+            if (dadosAtuais) atualizarPainelCapaCheia(dadosAtuais);
+        }
+    } else {
+        document.body.classList.remove('visual-capa-cheia');
+    }
+}
+
+function carregarVisualSalvo() {
+    const salvo = localStorage.getItem(STORAGE_VISUAL) || 'padrao';
+    aplicarVisual(salvo);
+}
+
+// ============================================
+// VÍDEO — CONTROLE GERAL
 // ============================================
 function bloquearControlesVideo(video) {
     if (!video) return;
@@ -75,61 +117,126 @@ function bloquearControlesVideo(video) {
 }
 
 bloquearControlesVideo(capaPrincipalVideoEl);
+bloquearControlesVideo(capaCheiaVideoEl);
 
-capaPrincipalVideoEl.addEventListener('enterpictureinpicture', () => {
-    if (document.pictureInPictureElement) {
-        document.exitPictureInPicture().catch(() => {});
-    }
+[capaPrincipalVideoEl, capaCheiaVideoEl].forEach((v) => {
+    v.addEventListener('enterpictureinpicture', () => {
+        if (document.pictureInPictureElement) {
+            document.exitPictureInPicture().catch(() => {});
+        }
+    });
+    v.addEventListener('contextmenu', (e) => e.preventDefault());
+    v.addEventListener('click', (e) => e.preventDefault());
+    v.addEventListener('dblclick', (e) => e.preventDefault());
+    v.addEventListener('pause', () => v.play().catch(() => {}));
 });
 
-capaPrincipalVideoEl.addEventListener('contextmenu', (e) => e.preventDefault());
-capaPrincipalVideoEl.addEventListener('click', (e) => e.preventDefault());
-capaPrincipalVideoEl.addEventListener('dblclick', (e) => e.preventDefault());
-capaPrincipalVideoEl.addEventListener('pause', () => {
-    capaPrincipalVideoEl.play().catch(() => {});
-});
+// ============================================
+// TOCAR HLS EM UM ELEMENTO <video> QUALQUER
+// ============================================
+function tocarHLS(videoEl, url, onHlsInstance) {
+    if (!videoEl) return;
 
-function tocarVideoHLS(url) {
-    if (hlsInstance) {
-        hlsInstance.destroy();
-        hlsInstance = null;
+    // Destroi instância anterior se existir
+    const anterior = onHlsInstance ? onHlsInstance() : null;
+    if (anterior) anterior.destroy();
+
+    videoEl.style.display = 'block';
+    bloquearControlesVideo(videoEl);
+
+    // Safari/iOS HLS nativo
+    if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
+        videoEl.src = url;
+        videoEl.play().catch(() => {});
+        return null;
     }
 
-    capaPrincipalVideoEl.style.display = 'block';
-    capaPrincipalImgEl.style.display = 'none';
-    bloquearControlesVideo(capaPrincipalVideoEl);
-
-    if (capaPrincipalVideoEl.canPlayType('application/vnd.apple.mpegurl')) {
-        capaPrincipalVideoEl.src = url;
-        capaPrincipalVideoEl.play().catch(() => {});
-        return;
-    }
-
+    // Chrome/Firefox com hls.js
     if (window.Hls && window.Hls.isSupported()) {
-        hlsInstance = new window.Hls({
+        const hls = new window.Hls({
             enableWorker: true,
             lowLatencyMode: false,
             backBufferLength: 90
         });
-        hlsInstance.loadSource(url);
-        hlsInstance.attachMedia(capaPrincipalVideoEl);
-        hlsInstance.on(window.Hls.Events.MANIFEST_PARSED, () => {
-            capaPrincipalVideoEl.play().catch(() => {});
+        hls.loadSource(url);
+        hls.attachMedia(videoEl);
+        hls.on(window.Hls.Events.MANIFEST_PARSED, () => {
+            videoEl.play().catch(() => {});
         });
-        hlsInstance.on(window.Hls.Events.ERROR, (event, data) => {
-            console.warn('Erro HLS:', data);
+        hls.on(window.Hls.Events.ERROR, (event, data) => {
             if (data.fatal) {
-                if (capaPrincipalImgEl.src) {
-                    capaPrincipalVideoEl.style.display = 'none';
-                    capaPrincipalImgEl.style.display = 'block';
-                }
+                console.warn('Erro HLS:', data);
+                videoEl.style.display = 'none';
             }
         });
-        return;
+        return hls;
     }
 
-    capaPrincipalVideoEl.src = url;
-    capaPrincipalVideoEl.play().catch(() => {});
+    // Fallback
+    videoEl.src = url;
+    videoEl.play().catch(() => {});
+    return null;
+}
+
+// ============================================
+// TOCAR CAPA NO PAINEL PADRÃO
+// ============================================
+function tocarCapaPadrao(staticUrl, videoUrl) {
+    // Imagem estática sempre primeiro (fallback)
+    if (staticUrl) {
+        capaPrincipalImgEl.src = staticUrl;
+    }
+
+    if (videoUrl) {
+        capaPrincipalImgEl.style.display = 'none';
+        hlsInstance = tocarHLS(capaPrincipalVideoEl, videoUrl, () => hlsInstance);
+    } else if (staticUrl) {
+        capaPrincipalVideoEl.style.display = 'none';
+        capaPrincipalVideoEl.pause();
+        capaPrincipalImgEl.style.display = 'block';
+    }
+}
+
+// ============================================
+// TOCAR CAPA NO PAINEL CAPA CHEIA
+// ============================================
+function tocarCapaCheia(staticUrl, videoUrl) {
+    if (staticUrl) {
+        capaCheiaImgEl.src = staticUrl;
+    }
+
+    if (videoUrl) {
+        capaCheiaImgEl.style.display = 'none';
+        hlsCheiaInstance = tocarHLS(capaCheiaVideoEl, videoUrl, () => hlsCheiaInstance);
+    } else if (staticUrl) {
+        capaCheiaVideoEl.style.display = 'none';
+        capaCheiaVideoEl.pause();
+        capaCheiaImgEl.style.display = 'block';
+    }
+}
+
+// ============================================
+// DADOS ATUAIS DA MÚSICA
+// ============================================
+let dadosMusicaAtual = null;
+
+function obterDadosAtuais() {
+    return dadosMusicaAtual;
+}
+
+// ============================================
+// ATUALIZA O PAINEL CAPA CHEIA COM OS DADOS
+// ============================================
+function atualizarPainelCapaCheia(data) {
+    if (!data) return;
+
+    usuarioStatusCheioEl.textContent = data.usuario || '—';
+    albumCheioEl.textContent = data.album || '';
+    musicaCheioEl.textContent = data.track || '';
+    artistaCheioEl.textContent = data.artist || '';
+
+    // Toca o vídeo/imagem de acordo com o que tem (incluindo capa custom)
+    tocarCapaCheia(data.static_url, data.video_url);
 }
 
 // ============================================
@@ -147,22 +254,9 @@ function salvarCapasCustom(dados) {
     localStorage.setItem(STORAGE_CAPAS_CUSTOM, JSON.stringify(dados));
 }
 
-function aplicarCapaCustom(artist, track) {
+function obterCapaCustom(artist, track) {
     const chave = `${artist}::${track}`;
-    const custom = carregarCapasCustom()[chave];
-    if (!custom) return false;
-
-    if (custom.tipo === 'animada' && custom.url) {
-        tocarVideoHLS(custom.url);
-        return true;
-    } else if (custom.tipo === 'estatica' && custom.url) {
-        capaPrincipalImgEl.src = custom.url;
-        capaPrincipalImgEl.style.display = 'block';
-        capaPrincipalVideoEl.style.display = 'none';
-        capaPrincipalVideoEl.pause();
-        return true;
-    }
-    return false;
+    return carregarCapasCustom()[chave] || null;
 }
 
 // ============================================
@@ -244,7 +338,19 @@ async function abrirModalCapas() {
                     dados[chave] = { tipo: 'estatica', url: c.static_url };
                 }
                 salvarCapasCustom(dados);
-                aplicarCapaCustom(artist, track);
+
+                // Aplica nos dois painéis
+                if (dadosMusicaAtual) {
+                    if (c.tem_animada && c.video_url) {
+                        dadosMusicaAtual.video_url = c.video_url;
+                        dadosMusicaAtual.static_url = c.static_url;
+                    } else {
+                        dadosMusicaAtual.video_url = null;
+                        dadosMusicaAtual.static_url = c.static_url;
+                    }
+                    tocarCapaPadrao(dadosMusicaAtual.static_url, dadosMusicaAtual.video_url);
+                    tocarCapaCheia(dadosMusicaAtual.static_url, dadosMusicaAtual.video_url);
+                }
             });
 
             gradeCapas.appendChild(div);
@@ -288,36 +394,71 @@ async function carregarLastFm(userEspecifico = null) {
         if (assinaturaAtual === ultimaMusica) return;
         ultimaMusica = assinaturaAtual;
 
+        // Verifica se tem capa customizada salva
+        const capaCustom = obterCapaCustom(data.artist, data.track);
+        let staticUrl = data.static_url;
+        let videoUrl = data.video_url;
+
+        if (capaCustom) {
+            if (capaCustom.tipo === 'animada') {
+                videoUrl = capaCustom.url;
+            } else {
+                staticUrl = capaCustom.url;
+                videoUrl = null;
+            }
+        }
+
+        // Salva os dados atuais globalmente
+        dadosMusicaAtual = {
+            usuario: user,
+            artist: data.artist,
+            track: data.track,
+            album: data.album,
+            static_url: staticUrl,
+            video_url: videoUrl,
+            dominant_color: data.dominant_color
+        };
+
+        musicaAtual = { artist: data.artist, track: data.track };
+
+        // ============================================
+        // ATUALIZA PAINEL PADRÃO
+        // ============================================
         painelEl.classList.add('visivel');
         usuarioStatusEl.textContent = user;
         albumEl.textContent = data.album || '';
         musicaEl.textContent = data.track;
         artistaEl.textContent = data.artist;
 
-        musicaAtual = { artist: data.artist, track: data.track };
-
-        if (data.static_url) {
-            capaPrincipalImgEl.src = data.static_url;
-            capaImgEl.src = data.static_url;
+        if (staticUrl) {
+            capaImgEl.src = staticUrl;
             capaImgEl.classList.add('visivel');
         }
 
-        const temCustom = aplicarCapaCustom(data.artist, data.track);
+        tocarCapaPadrao(staticUrl, videoUrl);
 
-        if (!temCustom) {
-            if (data.video_url) {
-                tocarVideoHLS(data.video_url);
-            } else if (data.static_url) {
-                capaPrincipalImgEl.style.display = 'block';
-                capaPrincipalVideoEl.style.display = 'none';
-                capaPrincipalVideoEl.pause();
-            }
-        }
+        // ============================================
+        // ATUALIZA PAINEL CAPA CHEIA
+        // ============================================
+        atualizarPainelCapaCheia(dadosMusicaAtual);
 
+        // ============================================
+        // COR DOMINANTE
+        // ============================================
         if (data.dominant_color) {
             const { r, g, b } = data.dominant_color;
             const fator = 0.5;
-            telaEl.style.backgroundColor = `rgb(${Math.round(r * fator)}, ${Math.round(g * fator)}, ${Math.round(b * fator)})`;
+            const rF = Math.round(r * fator);
+            const gF = Math.round(g * fator);
+            const bF = Math.round(b * fator);
+
+            // Fundo da tela
+            telaEl.style.backgroundColor = `rgb(${rF}, ${gF}, ${bF})`;
+
+            // Variáveis CSS pro gradiente do visual capa cheia
+            document.documentElement.style.setProperty('--cor-r', rF);
+            document.documentElement.style.setProperty('--cor-g', gF);
+            document.documentElement.style.setProperty('--cor-b', bF);
         }
 
     } catch (error) {
@@ -407,6 +548,15 @@ opcaoUltimo.addEventListener('click', (e) => {
 opcaoCapas.addEventListener('click', (e) => {
     e.stopPropagation();
     abrirModalCapas();
+});
+
+opcaoVisual.addEventListener('click', (e) => {
+    e.stopPropagation();
+    assistiveEl.classList.remove('aberto');
+
+    // Alterna
+    const novo = visualAtual === 'padrao' ? 'capa-cheia' : 'padrao';
+    aplicarVisual(novo);
 });
 
 opcaoCaptura.addEventListener('click', (e) => {
@@ -503,3 +653,8 @@ document.addEventListener('touchend', () => {
         arrastando = false;
     }
 });
+
+// ============================================
+// INICIALIZAÇÃO
+// ============================================
+carregarVisualSalvo();

@@ -12,8 +12,10 @@
         <img id="capa-img" src="" alt="">
     </div>
 
+    <!-- ============================================ -->
+    <!-- VISUAL PADRÃO (capa quadrada no centro)      -->
+    <!-- ============================================ -->
     <div class="painel" id="painel">
-
         <div class="status-lastfm">
             <img src="/last.svg" alt="Last.fm" class="icone-lastfm">
             <span class="texto-lastfm"><span id="usuario-status">—</span> está ouvindo:</span>
@@ -30,9 +32,33 @@
             <h1 id="musica"></h1>
             <p id="artista"></p>
         </div>
-
     </div>
 
+    <!-- ============================================ -->
+    <!-- VISUAL CAPA CHEIA                            -->
+    <!-- ============================================ -->
+    <div class="painel-capa-cheia" id="painel-capa-cheia">
+        <div class="capa-cheia-topo" id="capa-cheia-topo">
+            <video id="capa-cheia-video" autoplay loop muted playsinline disablepictureinpicture controlslist="nodownload nofullscreen noremoteplayback noplaybackrate" style="display:none;"></video>
+            <img id="capa-cheia-img" src="" alt="">
+        </div>
+
+        <div class="capa-cheia-gradiente" id="capa-cheia-gradiente"></div>
+
+        <div class="capa-cheia-info" id="capa-cheia-info">
+            <div class="status-lastfm-cheio">
+                <img src="/last.svg" alt="Last.fm" class="icone-lastfm">
+                <span class="texto-lastfm"><span id="usuario-status-cheio">—</span> está ouvindo:</span>
+            </div>
+            <p id="album-cheio"></p>
+            <h1 id="musica-cheio"></h1>
+            <p id="artista-cheio"></p>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- ASSISTENTE                                   -->
+    <!-- ============================================ -->
     <div class="assistive" id="assistive">
         <button class="assistive-btn" id="assistive-btn" aria-label="Menu"></button>
         <div class="assistive-menu" id="assistive-menu">
@@ -45,12 +71,18 @@
             <button class="assistive-opcao" id="opcao-capas" aria-label="Escolher capa">
                 <i class="fa-solid fa-images"></i>
             </button>
+            <button class="assistive-opcao" id="opcao-visual" aria-label="Trocar visual">
+                <i class="fa-solid fa-layer-group"></i>
+            </button>
             <button class="assistive-opcao" id="opcao-captura" aria-label="Captura de tela">
                 <i class="fa-solid fa-camera"></i>
             </button>
         </div>
     </div>
 
+    <!-- ============================================ -->
+    <!-- MODAL DE PESQUISA                            -->
+    <!-- ============================================ -->
     <div class="modal-pesquisa" id="modal-pesquisa">
         <div class="modal-container">
             <div class="modal-topo">
@@ -67,6 +99,9 @@
         </div>
     </div>
 
+    <!-- ============================================ -->
+    <!-- MODAL DE CAPAS                               -->
+    <!-- ============================================ -->
     <div class="modal-capas" id="modal-capas">
         <div class="modal-capas-container">
             <div class="modal-capas-topo">
