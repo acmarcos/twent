@@ -641,23 +641,21 @@ body {
     inset: 0;
     z-index: 10;
     display: none;
-    flex-direction: column;
 }
 
 body.visual-capa-cheia .painel-capa-cheia {
-    display: flex;
+    display: block;
 }
 
 body.visual-capa-cheia .painel {
     display: none !important;
 }
 
+/* --- Capa ocupando a tela inteira --- */
+
 .capa-cheia-topo {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 50vh;
+    inset: 0;
     overflow: hidden;
     z-index: 1;
     background: #1a1a1a;
@@ -674,29 +672,32 @@ body.visual-capa-cheia .painel {
     left: 0;
 }
 
+/* --- Gradiente por cima da capa (parte de baixo) --- */
+
 .capa-cheia-gradiente {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    height: 50vh;
-    z-index: 1;
+    height: 60vh;
+    z-index: 2;
     pointer-events: none;
     background: linear-gradient(
         to bottom,
         rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 0) 0%,
+        rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 0.85) 55%,
         rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 1) 100%
     );
 }
 
+/* --- Informações no canto inferior esquerdo --- */
+
 .capa-cheia-info {
     position: absolute;
-    top: 50vh;
-    left: 0;
-    right: 0;
-    transform: translateY(-50%);
-    z-index: 2;
-    padding: 0 2rem;
+    bottom: 2rem;
+    left: 2rem;
+    right: 2rem;
+    z-index: 3;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -717,11 +718,12 @@ body.visual-capa-cheia .painel {
     font-size: var(--album-tamanho);
     line-height: 1.3;
     font-weight: normal;
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(255, 255, 255, 0.85);
     width: 100%;
     text-align: left;
     white-space: nowrap;
     overflow: hidden;
+    text-overflow: ellipsis;
     letter-spacing: 0.02em;
 }
 
@@ -740,6 +742,7 @@ body.visual-capa-cheia .painel {
     text-align: left;
     white-space: nowrap;
     overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .capa-cheia-info #artista-cheio {
@@ -747,12 +750,15 @@ body.visual-capa-cheia .painel {
     font-size: var(--artista-tamanho);
     line-height: 1.3;
     font-weight: normal;
-    color: rgba(255, 255, 255, 0.75);
+    color: rgba(255, 255, 255, 0.9);
     width: 100%;
     text-align: left;
     white-space: nowrap;
     overflow: hidden;
+    text-overflow: ellipsis;
 }
+
+/* --- Vídeo sem controles --- */
 
 #capa-cheia-video {
     pointer-events: none;
@@ -825,6 +831,8 @@ body.visual-capa-cheia .painel {
     }
 
     .capa-cheia-info {
-        padding: 0 1rem;
+        bottom: 1.5rem;
+        left: 1rem;
+        right: 1rem;
     }
 }
