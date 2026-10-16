@@ -680,21 +680,22 @@ body.visual-capa-cheia .tela {
     left: 0;
 }
 
-/* --- Gradiente: dissolve a capa na cor dominante --- */
+/* --- Gradiente: dissolve a base da capa na cor dominante ---
+   Fica APENAS em cima da parte de baixo da capa (40vh a 60vh).
+   A partir de 60vh, a cor sólida já vem do backgroundColor do painel. */
 
 .capa-cheia-gradiente {
     position: absolute;
     left: 0;
     right: 0;
     top: 40vh;
-    bottom: 0;
+    height: 20vh;
     z-index: 2;
     pointer-events: none;
     background: linear-gradient(
         to bottom,
         rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 0) 0%,
-        rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 0.3) 30%,
-        rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 0.7) 60%,
+        rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 0.5) 60%,
         rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 1) 100%
     );
 }
@@ -841,6 +842,7 @@ body.visual-capa-cheia .tela {
 
     .capa-cheia-gradiente {
         top: 35vh;
+        height: 25vh;
     }
 
     .capa-cheia-info {
