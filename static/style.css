@@ -651,14 +651,14 @@ body.visual-capa-cheia .painel {
     display: none !important;
 }
 
-/* --- Capa ocupando 70% da altura --- */
+/* --- Capa ocupando 60% da altura --- */
 
 .capa-cheia-topo {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 70vh;
+    height: 60vh;
     overflow: hidden;
     z-index: 1;
     background: #1a1a1a;
@@ -675,25 +675,25 @@ body.visual-capa-cheia .painel {
     left: 0;
 }
 
-/* --- Gradiente por cima da capa --- */
+/* --- Gradiente por cima da capa (fade out suave) --- */
 
 .capa-cheia-gradiente {
     position: absolute;
-    bottom: 0;
     left: 0;
     right: 0;
-    height: 60vh;
+    top: 40vh;
+    bottom: 0;
     z-index: 2;
     pointer-events: none;
     background: linear-gradient(
         to bottom,
         rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 0) 0%,
-        rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 0.85) 55%,
+        rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 0.6) 45%,
         rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 1) 100%
     );
 }
 
-/* --- Informações acima do botão assistente --- */
+/* --- Informações em cima da transição --- */
 
 .capa-cheia-info {
     position: absolute;
@@ -831,6 +831,10 @@ body.visual-capa-cheia .painel {
     .grade-capas {
         grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
         gap: 0.5rem;
+    }
+
+    .capa-cheia-gradiente {
+        top: 35vh;
     }
 
     .capa-cheia-info {
