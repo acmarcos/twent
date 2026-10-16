@@ -50,7 +50,7 @@ let usuarioAtual = null;
 let musicaAtual = null;
 let hlsInstance = null;
 let hlsCheiaInstance = null;
-let visualAtual = 'padrao'; // 'padrao' ou 'capa-cheia'
+let visualAtual = 'padrao';
 
 // ============================================
 // BLOQUEIO DE ZOOM
@@ -89,7 +89,6 @@ function aplicarVisual(visual) {
 
     if (visual === 'capa-cheia') {
         document.body.classList.add('visual-capa-cheia');
-        // Sincroniza com a música atual
         if (musicaAtual) {
             const dadosAtuais = obterDadosAtuais();
             if (dadosAtuais) atualizarPainelCapaCheia(dadosAtuais);
@@ -137,21 +136,18 @@ bloquearControlesVideo(capaCheiaVideoEl);
 function tocarHLS(videoEl, url, onHlsInstance) {
     if (!videoEl) return;
 
-    // Destroi instância anterior se existir
     const anterior = onHlsInstance ? onHlsInstance() : null;
     if (anterior) anterior.destroy();
 
     videoEl.style.display = 'block';
     bloquearControlesVideo(videoEl);
 
-    // Safari/iOS HLS nativo
     if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
         videoEl.src = url;
         videoEl.play().catch(() => {});
         return null;
     }
 
-    // Chrome/Firefox com hls.js
     if (window.Hls && window.Hls.isSupported()) {
         const hls = new window.Hls({
             enableWorker: true,
@@ -172,7 +168,6 @@ function tocarHLS(videoEl, url, onHlsInstance) {
         return hls;
     }
 
-    // Fallback
     videoEl.src = url;
     videoEl.play().catch(() => {});
     return null;
@@ -182,7 +177,6 @@ function tocarHLS(videoEl, url, onHlsInstance) {
 // TOCAR CAPA NO PAINEL PADRÃO
 // ============================================
 function tocarCapaPadrao(staticUrl, videoUrl) {
-    // Imagem estática sempre primeiro (fallback)
     if (staticUrl) {
         capaPrincipalImgEl.src = staticUrl;
     }
@@ -225,7 +219,7 @@ function obterDadosAtuais() {
 }
 
 // ============================================
-// ATUALIZA O PAINEL CAPA CHEIA COM OS DADOS
+// ATUALIZA O PAINEL CAPA CHEIA
 // ============================================
 function atualizarPainelCapaCheia(data) {
     if (!data) return;
@@ -235,7 +229,21 @@ function atualizarPainelCapaCheia(data) {
     musicaCheioEl.textContent = data.track || '';
     artistaCheioEl.textContent = data.artist || '';
 
-    // Toca o vídeo/imagem de acordo com o que tem (incluindo capa custom)
+    // Cor dominante como fundo do painel
+    if (data.dominant_color) {
+        const { r, g, b } = data.dominant_color;
+        const fator = 0.5;
+        const rF = Math.round(r * fator);
+        const gF = Math.round(g * fator);
+        const bF = Math.round(b * fator);
+
+        painelCapaCheiaEl.style.backgroundColor = `rgb(${rF}, ${gF}, ${bF})`;
+
+        document.documentElement.style.setProperty('--cor-r', rF);
+        document.documentElement.style.setProperty('--cor-g', gF);
+        document.documentElement.style.setProperty('--cor-b', bF);
+    }
+
     tocarCapaCheia(data.static_url, data.video_url);
 }
 
@@ -339,7 +347,6 @@ async function abrirModalCapas() {
                 }
                 salvarCapasCustom(dados);
 
-                // Aplica nos dois painéis
                 if (dadosMusicaAtual) {
                     if (c.tem_animada && c.video_url) {
                         dadosMusicaAtual.video_url = c.video_url;
@@ -394,7 +401,6 @@ async function carregarLastFm(userEspecifico = null) {
         if (assinaturaAtual === ultimaMusica) return;
         ultimaMusica = assinaturaAtual;
 
-        // Verifica se tem capa customizada salva
         const capaCustom = obterCapaCustom(data.artist, data.track);
         let staticUrl = data.static_url;
         let videoUrl = data.video_url;
@@ -408,7 +414,6 @@ async function carregarLastFm(userEspecifico = null) {
             }
         }
 
-        // Salva os dados atuais globalmente
         dadosMusicaAtual = {
             usuario: user,
             artist: data.artist,
@@ -421,9 +426,7 @@ async function carregarLastFm(userEspecifico = null) {
 
         musicaAtual = { artist: data.artist, track: data.track };
 
-        // ============================================
-        // ATUALIZA PAINEL PADRÃO
-        // ============================================
+        // Painel padrão
         painelEl.classList.add('visivel');
         usuarioStatusEl.textContent = user;
         albumEl.textContent = data.album || '';
@@ -437,14 +440,10 @@ async function carregarLastFm(userEspecifico = null) {
 
         tocarCapaPadrao(staticUrl, videoUrl);
 
-        // ============================================
-        // ATUALIZA PAINEL CAPA CHEIA
-        // ============================================
+        // Painel capa cheia
         atualizarPainelCapaCheia(dadosMusicaAtual);
 
-        // ============================================
-        // COR DOMINANTE
-        // ============================================
+        // Cor dominante
         if (data.dominant_color) {
             const { r, g, b } = data.dominant_color;
             const fator = 0.5;
@@ -452,13 +451,18 @@ async function carregarLastFm(userEspecifico = null) {
             const gF = Math.round(g * fator);
             const bF = Math.round(b * fator);
 
-            // Fundo da tela
+            // Fundo do modo padrão
             telaEl.style.backgroundColor = `rgb(${rF}, ${gF}, ${bF})`;
 
-            // Variáveis CSS pro gradiente do visual capa cheia
+            // Variáveis CSS
             document.documentElement.style.setProperty('--cor-r', rF);
             document.documentElement.style.setProperty('--cor-g', gF);
             document.documentElement.style.setProperty('--cor-b', bF);
+
+            // Fundo sólido do modo capa cheia
+            if (painelCapaCheiaEl) {
+                painelCapaCheiaEl.style.backgroundColor = `rgb(${rF}, ${gF}, ${bF})`;
+            }
         }
 
     } catch (error) {
@@ -553,8 +557,6 @@ opcaoCapas.addEventListener('click', (e) => {
 opcaoVisual.addEventListener('click', (e) => {
     e.stopPropagation();
     assistiveEl.classList.remove('aberto');
-
-    // Alterna
     const novo = visualAtual === 'padrao' ? 'capa-cheia' : 'padrao';
     aplicarVisual(novo);
 });

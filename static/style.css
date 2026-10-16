@@ -641,6 +641,7 @@ body {
     inset: 0;
     z-index: 10;
     display: none;
+    background: #1a1a1a;
 }
 
 body.visual-capa-cheia .painel-capa-cheia {
@@ -648,6 +649,10 @@ body.visual-capa-cheia .painel-capa-cheia {
 }
 
 body.visual-capa-cheia .painel {
+    display: none !important;
+}
+
+body.visual-capa-cheia .tela {
     display: none !important;
 }
 
@@ -675,7 +680,7 @@ body.visual-capa-cheia .painel {
     left: 0;
 }
 
-/* --- Gradiente por cima da capa (fade out suave) --- */
+/* --- Gradiente: dissolve a capa na cor dominante --- */
 
 .capa-cheia-gradiente {
     position: absolute;
@@ -688,16 +693,17 @@ body.visual-capa-cheia .painel {
     background: linear-gradient(
         to bottom,
         rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 0) 0%,
-        rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 0.6) 45%,
+        rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 0.3) 30%,
+        rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 0.7) 60%,
         rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 1) 100%
     );
 }
 
-/* --- Informações em cima da transição --- */
+/* --- Informações no meio da tela --- */
 
 .capa-cheia-info {
     position: absolute;
-    bottom: 6rem;
+    top: 55vh;
     left: 2rem;
     right: 2rem;
     z-index: 3;
@@ -838,7 +844,7 @@ body.visual-capa-cheia .painel {
     }
 
     .capa-cheia-info {
-        bottom: 5.5rem;
+        top: 52vh;
         left: 1rem;
         right: 1rem;
     }
