@@ -13,8 +13,7 @@ const artistaEl = document.getElementById('artista');
 const painelCapaCheiaEl = document.getElementById('painel-capa-cheia');
 const capaCheiaVideoEl = document.getElementById('capa-cheia-video');
 const capaCheiaImgEl = document.getElementById('capa-cheia-img');
-const capaCheiaBlurEl = document.getElementById('capa-cheia-blur');
-const capaCheiaGradienteEl = document.getElementById('capa-cheia-gradiente');
+const capaCheiaOverlayEl = document.getElementById('capa-cheia-overlay');
 const usuarioStatusCheioEl = document.getElementById('usuario-status-cheio');
 const albumCheioEl = document.getElementById('album-cheio');
 const musicaCheioEl = document.getElementById('musica-cheio');
@@ -45,82 +44,101 @@ const STORAGE_KEY = 'twent_ultimo_usuario';
 const STORAGE_CAPAS_CUSTOM = 'twent_capas_custom';
 const STORAGE_VISUAL = 'twent_visual';
 
-const AUMENTO_LUMINANCIA = 20; // ajuste aqui: 10 (leve), 20 (moderado), 30 (claro)
-
 let intervaloAtualizacao = null;
 let ultimaMusica = null;
+let ultimaAtualizacao = 0;
 let usuarioAtual = null;
 let musicaAtual = null;
 let hlsInstance = null;
 let hlsCheiaInstance = null;
 let visualAtual = 'padrao';
+let marqueeTimeout = null;
 
 // ============================================
 // UTILIDADES DE COR
 // ============================================
-function rgbParaHsl(r, g, b) {
-    r /= 255;
-    g /= 255;
-    b /= 255;
-    const max = Math.max(r, g, b);
-    const min = Math.min(r, g, b);
-    let h, s, l = (max + min) / 2;
+function calcularLuminancia(r, g, b) {
+    const canais = [r, g, b].map(v => {
+        v /= 255;
+        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * canais[0] + 0.7152 * canais[1] + 0.0722 * canais[2];
+}
 
-    if (max === min) {
-        h = s = 0;
-    } else {
-        const d = max - min;
-        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-        switch (max) {
-            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-            case g: h = (b - r) / d + 2; break;
-            case b: h = (r - g) / d + 4; break;
+// ============================================
+// LOOP SUAVE DE VÍDEO COM CROSSFADE (sem piscar)
+// ============================================
+function configurarLoopSuave(videoEl) {
+    if (!videoEl) return;
+
+    let reiniciando = false;
+
+    videoEl.addEventListener('timeupdate', () => {
+        if (!videoEl.duration || reiniciando) return;
+
+        const restante = videoEl.duration - videoEl.currentTime;
+
+        // Fade out nos últimos 0.4s
+        if (restante < 0.4 && restante > 0) {
+            videoEl.style.opacity = String(restante / 0.4);
         }
-        h /= 6;
-    }
 
-    return {
-        h: Math.round(h * 360),
-        s: Math.round(s * 100),
-        l: Math.round(l * 100)
-    };
+        // Reinicia quando faltar 0.15s
+        if (restante <= 0.15) {
+            reiniciando = true;
+            videoEl.currentTime = 0;
+            videoEl.style.opacity = '0';
+
+            // Fade in depois do reinício
+            setTimeout(() => {
+                videoEl.style.opacity = '1';
+                reiniciando = false;
+            }, 50);
+        }
+    });
 }
 
-function hslParaRgb(h, s, l) {
-    h /= 360;
-    s /= 100;
-    l /= 100;
+configurarLoopSuave(capaPrincipalVideoEl);
+configurarLoopSuave(capaCheiaVideoEl);
 
-    let r, g, b;
-    if (s === 0) {
-        r = g = b = l;
-    } else {
-        const hue2rgb = (p, q, t) => {
-            if (t < 0) t += 1;
-            if (t > 1) t -= 1;
-            if (t < 1/6) return p + (q - p) * 6 * t;
-            if (t < 1/2) return q;
-            if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-            return p;
-        };
-        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-        const p = 2 * l - q;
-        r = hue2rgb(p, q, h + 1/3);
-        g = hue2rgb(p, q, h);
-        b = hue2rgb(p, q, h - 1/3);
-    }
+// ============================================
+// MARQUEE SIMPLES
+// ============================================
+function verificarMarquee() {
+    const pares = [
+        { container: 'marquee-album', conteudo: 'album-cheio' },
+        { container: 'marquee-musica', conteudo: 'musica-cheio' },
+        { container: 'marquee-artista', conteudo: 'artista-cheio' }
+    ];
 
-    return {
-        r: Math.round(r * 255),
-        g: Math.round(g * 255),
-        b: Math.round(b * 255)
-    };
+    pares.forEach(({ container, conteudo }) => {
+        const contEl = document.getElementById(container);
+        const conteudoEl = document.getElementById(conteudo);
+        if (!contEl || !conteudoEl) return;
+
+        contEl.classList.remove('marquee-ativo');
+        contEl.style.removeProperty('--deslocamento');
+
+        const texto = conteudoEl.textContent;
+        if (!texto || !texto.trim()) return;
+
+        const larguraTexto = conteudoEl.scrollWidth;
+        const larguraContainer = contEl.clientWidth;
+
+        if (larguraTexto > larguraContainer + 2) {
+            const deslocamento = -(larguraTexto - larguraContainer);
+            contEl.style.setProperty('--deslocamento', deslocamento + 'px');
+            contEl.classList.add('marquee-ativo');
+        }
+    });
 }
 
-function clarearCor(r, g, b, aumento) {
-    const hsl = rgbParaHsl(r, g, b);
-    hsl.l = Math.min(100, hsl.l + aumento);
-    return hslParaRgb(hsl.h, hsl.s, hsl.l);
+function agendarVerificacaoMarquee() {
+    if (marqueeTimeout) clearTimeout(marqueeTimeout);
+    marqueeTimeout = setTimeout(() => {
+        verificarMarquee();
+        marqueeTimeout = null;
+    }, 100);
 }
 
 // ============================================
@@ -164,6 +182,7 @@ function aplicarVisual(visual) {
             const dadosAtuais = obterDadosAtuais();
             if (dadosAtuais) atualizarPainelCapaCheia(dadosAtuais);
         }
+        agendarVerificacaoMarquee();
     } else {
         document.body.classList.remove('visual-capa-cheia');
     }
@@ -211,6 +230,7 @@ function tocarHLS(videoEl, url, onHlsInstance) {
     if (anterior) anterior.destroy();
 
     videoEl.style.display = 'block';
+    videoEl.style.opacity = '1';
     bloquearControlesVideo(videoEl);
 
     if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
@@ -268,8 +288,8 @@ function tocarCapaPadrao(staticUrl, videoUrl) {
 function tocarCapaCheia(staticUrl, videoUrl) {
     if (staticUrl) {
         capaCheiaImgEl.src = staticUrl;
-        if (capaCheiaBlurEl) {
-            capaCheiaBlurEl.style.backgroundImage = `url('${staticUrl}')`;
+        if (capaCheiaOverlayEl) {
+            capaCheiaOverlayEl.src = staticUrl;
         }
     }
 
@@ -305,19 +325,29 @@ function atualizarPainelCapaCheia(data) {
 
     if (data.dominant_color) {
         const { r, g, b } = data.dominant_color;
-        const corClara = clarearCor(r, g, b, AUMENTO_LUMINANCIA);
-        const rF = corClara.r;
-        const gF = corClara.g;
-        const bF = corClara.b;
 
-        painelCapaCheiaEl.style.backgroundColor = `rgb(${rF}, ${gF}, ${bF})`;
+        painelCapaCheiaEl.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
 
-        document.documentElement.style.setProperty('--cor-r', rF);
-        document.documentElement.style.setProperty('--cor-g', gF);
-        document.documentElement.style.setProperty('--cor-b', bF);
+        document.documentElement.style.setProperty('--cor-r', r);
+        document.documentElement.style.setProperty('--cor-g', g);
+        document.documentElement.style.setProperty('--cor-b', b);
+
+        const lum = calcularLuminancia(r, g, b);
+        const textoEscuro = lum > 0.5;
+
+        document.documentElement.style.setProperty(
+            '--cor-texto',
+            textoEscuro ? '#000' : '#fff'
+        );
+        document.documentElement.style.setProperty(
+            '--cor-texto-secundario',
+            textoEscuro ? 'rgba(0, 0, 0, 0.75)' : 'rgba(255, 255, 255, 0.85)'
+        );
     }
 
     tocarCapaCheia(data.static_url, data.video_url);
+
+    agendarVerificacaoMarquee();
 }
 
 // ============================================
@@ -454,7 +484,7 @@ modalCapas.addEventListener('click', (e) => {
 // ============================================
 // LAST.FM
 // ============================================
-async function carregarLastFm(userEspecifico = null) {
+async function carregarLastFm(userEspecifico = null, forcar = false) {
     const user = userEspecifico || usuarioAtual || inputBusca.value.trim();
     if (!user) return;
 
@@ -471,8 +501,15 @@ async function carregarLastFm(userEspecifico = null) {
         }
 
         const assinaturaAtual = `${data.artist}::${data.track}::${data.album}`;
-        if (assinaturaAtual === ultimaMusica) return;
+        const agora = Date.now();
+        const passouTempo = agora - ultimaAtualizacao > 30000;
+
+        if (assinaturaAtual === ultimaMusica && !passouTempo && !forcar) {
+            return;
+        }
+
         ultimaMusica = assinaturaAtual;
+        ultimaAtualizacao = agora;
 
         const capaCustom = obterCapaCustom(data.artist, data.track);
         let staticUrl = data.static_url;
@@ -516,22 +553,18 @@ async function carregarLastFm(userEspecifico = null) {
         // Painel capa cheia
         atualizarPainelCapaCheia(dadosMusicaAtual);
 
-        // Cor dominante
+        // Cor dominante (pura, sem clarear)
         if (data.dominant_color) {
             const { r, g, b } = data.dominant_color;
-            const corClara = clarearCor(r, g, b, AUMENTO_LUMINANCIA);
-            const rF = corClara.r;
-            const gF = corClara.g;
-            const bF = corClara.b;
 
-            telaEl.style.backgroundColor = `rgb(${rF}, ${gF}, ${bF})`;
+            telaEl.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
 
-            document.documentElement.style.setProperty('--cor-r', rF);
-            document.documentElement.style.setProperty('--cor-g', gF);
-            document.documentElement.style.setProperty('--cor-b', bF);
+            document.documentElement.style.setProperty('--cor-r', r);
+            document.documentElement.style.setProperty('--cor-g', g);
+            document.documentElement.style.setProperty('--cor-b', b);
 
             if (painelCapaCheiaEl) {
-                painelCapaCheiaEl.style.backgroundColor = `rgb(${rF}, ${gF}, ${bF})`;
+                painelCapaCheiaEl.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
             }
         }
 
@@ -550,10 +583,11 @@ function iniciarAtualizacaoAutomatica(user) {
     if (intervaloAtualizacao) clearInterval(intervaloAtualizacao);
 
     ultimaMusica = null;
-    carregarLastFm(alvo);
+    ultimaAtualizacao = 0;
+    carregarLastFm(alvo, true);
 
     intervaloAtualizacao = setInterval(() => {
-        carregarLastFm(alvo);
+        carregarLastFm(alvo, true);
     }, 10000);
 }
 

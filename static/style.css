@@ -55,6 +55,8 @@
     --album-tamanho: 0.8rem;
     --painel-gap: 1rem;
     --painel-pad: 0;
+    --cor-texto: #fff;
+    --cor-texto-secundario: rgba(255, 255, 255, 0.85);
 }
 
 * {
@@ -656,80 +658,74 @@ body.visual-capa-cheia .tela {
     display: none !important;
 }
 
-/* --- 1. CAPA (com gradiente integrado, sem arco) --- */
+/* --- 1. CAPA NÍTIDA (75vh) --- */
 
 .capa-cheia-topo {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 100vh;
+    height: 75vh;
     overflow: hidden;
     z-index: 1;
-    background-image: linear-gradient(
-        to bottom,
-        rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 0) 0%,
-        rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 0) 40%,
-        rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 0.6) 60%,
-        rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 1) 100%
-    );
-    background-size: cover;
-    background-position: center;
-    background-color: rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 1);
+    background: #1a1a1a;
 }
 
-/* Imagem estática com máscara de fade suave */
 #capa-cheia-img {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    height: 65vh;
+    height: 100%;
     object-fit: cover;
     z-index: 0;
     -webkit-mask-image: linear-gradient(
         to bottom,
         black 0%,
         black 50%,
-        rgba(0,0,0,0.7) 65%,
-        transparent 100%
+        rgba(0,0,0,0.85) 65%,
+        rgba(0,0,0,0.4) 80%,
+        transparent 92%
     );
     mask-image: linear-gradient(
         to bottom,
         black 0%,
         black 50%,
-        rgba(0,0,0,0.7) 65%,
-        transparent 100%
+        rgba(0,0,0,0.85) 65%,
+        rgba(0,0,0,0.4) 80%,
+        transparent 92%
     );
 }
 
-/* Vídeo com máscara de fade suave */
 #capa-cheia-video {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    height: 65vh;
+    height: 100%;
     object-fit: cover;
     z-index: 0;
     -webkit-mask-image: linear-gradient(
         to bottom,
         black 0%,
         black 50%,
-        rgba(0,0,0,0.7) 65%,
-        transparent 100%
+        rgba(0,0,0,0.85) 65%,
+        rgba(0,0,0,0.4) 80%,
+        transparent 92%
     );
     mask-image: linear-gradient(
         to bottom,
         black 0%,
         black 50%,
-        rgba(0,0,0,0.7) 65%,
-        transparent 100%
+        rgba(0,0,0,0.85) 65%,
+        rgba(0,0,0,0.4) 80%,
+        transparent 92%
     );
     pointer-events: none;
     user-select: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
+    transition: opacity 0.15s ease;
 }
 
 #capa-cheia-video::-webkit-media-controls,
@@ -750,13 +746,59 @@ body.visual-capa-cheia .tela {
     pointer-events: none !important;
 }
 
-/* --- 2. INFORMAÇÕES na parte de baixo --- */
+/* --- 2. GRADIENTE (cor dominante) --- */
+
+.capa-cheia-gradiente {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(
+        to bottom,
+        rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 0) 0%,
+        rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 0) 35%,
+        rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 0.5) 55%,
+        rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 1) 75%,
+        rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 1) 100%
+    );
+}
+
+/* --- 3. CAPA OVERLAY (100% opacidade, blur 100px, saturação 300%) --- */
+
+.capa-cheia-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    object-fit: cover;
+    z-index: 2;
+    pointer-events: none;
+    filter: blur(100px) saturate(3);
+    opacity: 1;
+    -webkit-mask-image: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(0, 0, 0, 0.5) 50%,
+        black 100%
+    );
+    mask-image: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(0, 0, 0, 0.5) 50%,
+        black 100%
+    );
+}
+
+/* --- 4. INFORMAÇÕES alinhadas à esquerda --- */
 
 .capa-cheia-info {
     position: absolute;
-    bottom: 6rem;
-    left: 2rem;
-    right: 2rem;
+    top: 70vh;
+    left: 5%;
+    right: 5%;
+    width: 90%;
+    max-width: 90%;
     z-index: 4;
     display: flex;
     flex-direction: column;
@@ -765,57 +807,143 @@ body.visual-capa-cheia .tela {
     text-align: left;
 }
 
-.status-lastfm-cheio {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
+/* --- Marquee simples --- */
+
+.capa-cheia-info .marquee-container {
     width: 100%;
-    margin-bottom: 0.4rem;
+    overflow: hidden;
+    position: relative;
 }
 
+.capa-cheia-info .marquee-container.marquee-ativo {
+    -webkit-mask-image: linear-gradient(
+        to right,
+        transparent 0%,
+        black 8%,
+        black 92%,
+        transparent 100%
+    );
+    mask-image: linear-gradient(
+        to right,
+        transparent 0%,
+        black 8%,
+        black 92%,
+        transparent 100%
+    );
+}
+
+.capa-cheia-info .marquee-conteudo {
+    display: inline-block;
+    white-space: nowrap;
+}
+
+.capa-cheia-info .marquee-container.marquee-ativo .marquee-conteudo {
+    animation: marquee-slide 8s ease-in-out infinite alternate;
+}
+
+@keyframes marquee-slide {
+    0%, 10% {
+        transform: translateX(0);
+    }
+    90%, 100% {
+        transform: translateX(var(--deslocamento, 0px));
+    }
+}
+
+/* --- Álbum: ALL CAPS, Bold, 8px, opacidade 30% --- */
+
 .capa-cheia-info #album-cheio {
-    font-family: 'MinhaFonteMedium', system-ui, sans-serif;
-    font-size: var(--album-tamanho);
+    font-family: 'MinhaFonteBold', system-ui, sans-serif;
+    font-size: 8px;
     line-height: 1.3;
     font-weight: normal;
-    color: rgba(255, 255, 255, 0.85);
+    color: rgba(255, 255, 255, 0.3);
+    white-space: nowrap;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    display: inline-block;
     width: 100%;
     text-align: left;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    letter-spacing: 0.02em;
 }
 
 .capa-cheia-info #album-cheio:empty {
     display: none;
 }
 
-.capa-cheia-info h1 {
+/* --- Música: 20px --- */
+
+.capa-cheia-info #musica-cheio {
     font-family: 'MinhaFonteHeavy', system-ui, sans-serif;
-    font-size: var(--titulo-tamanho);
+    font-size: 20px;
     line-height: 1.15;
     font-weight: normal;
     letter-spacing: -0.02em;
-    color: #fff;
+    color: var(--cor-texto);
+    white-space: nowrap;
+    display: inline-block;
     width: 100%;
     text-align: left;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
+
+/* --- Artista: 13px, Regular --- */
 
 .capa-cheia-info #artista-cheio {
     font-family: 'MinhaFonteRegular', system-ui, sans-serif;
-    font-size: var(--artista-tamanho);
+    font-size: 13px;
     line-height: 1.3;
     font-weight: normal;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--cor-texto-secundario);
+    white-space: nowrap;
+    display: inline-block;
     width: 100%;
     text-align: left;
+}
+
+/* --- 5. STATUS LAST.FM fixo na parte de baixo, alinhado à esquerda --- */
+
+.status-lastfm-cheio {
+    position: fixed;
+    bottom: 2.5rem;
+    left: 5%;
+    transform: none;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.4rem;
+    z-index: 5;
+    opacity: 0.85;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    pointer-events: none;
+}
+
+.status-lastfm-cheio .icone-lastfm-wrapper {
+    width: 16px;
+    height: 16px;
+    background: #e31c1c;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.status-lastfm-cheio .icone-lastfm {
+    width: 9px;
+    height: 9px;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+    display: block;
+}
+
+#usuario-status-cheio {
+    font-family: 'MinhaFonteBold', system-ui, sans-serif;
+    font-size: 8px;
+    line-height: 1;
+    color: var(--cor-texto-secundario);
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
 }
 
 /* ============================================ */
@@ -863,14 +991,40 @@ body.visual-capa-cheia .tela {
         gap: 0.5rem;
     }
 
-    #capa-cheia-img,
-    #capa-cheia-video {
-        height: 60vh;
+    .capa-cheia-topo {
+        height: 70vh;
     }
 
     .capa-cheia-info {
-        bottom: 5.5rem;
-        left: 1rem;
-        right: 1rem;
+        top: 65vh;
+        left: 5%;
+        right: 5%;
+        width: 90%;
+        max-width: 90%;
+        gap: 2px;
+        align-items: flex-start;
+        text-align: left;
+    }
+
+    .capa-cheia-info #album-cheio {
+        font-size: 8px;
+    }
+
+    .capa-cheia-info #musica-cheio {
+        font-size: 20px;
+    }
+
+    .capa-cheia-info #artista-cheio {
+        font-size: 13px;
+    }
+
+    .status-lastfm-cheio {
+        left: 5%;
+        transform: none;
+        bottom: 2.5rem;
+    }
+
+    #usuario-status-cheio {
+        font-size: 8px;
     }
 }

@@ -43,8 +43,7 @@ def calcular_cor_dominante(url_imagem):
             for pixel in pixels:
                 r, g, b = pixel
 
-                # --- Ignora tons de pele ---
-                # Pele típica: R > G > B, com R bem maior que G e B
+                # Ignora tons de pele
                 if r > 95 and g > 40 and b > 20:
                     max_c = max(r, g, b)
                     min_c = min(r, g, b)
@@ -61,36 +60,23 @@ def calcular_cor_dominante(url_imagem):
                 baldes[chave]["g"] += g
                 baldes[chave]["b"] += b
 
-            # Calcula cor média e saturação de cada balde
-            candidatos = []
+            # Pega simplesmente a cor que mais aparece
+            melhor = None
             for b in baldes.values():
-                r = b["r"] // b["count"]
-                g = b["g"] // b["count"]
-                bl = b["b"] // b["count"]
-
-                brilho = (r + g + bl) / 3
-                if not (25 < brilho < 230):
+                brilho = (b["r"] // b["count"] + b["g"] // b["count"] + b["b"] // b["count"]) / 3
+                if not (25 < brilho < 245):
                     continue
+                if melhor is None or b["count"] > melhor["count"]:
+                    melhor = b
 
-                max_c = max(r, g, bl)
-                min_c = min(r, g, bl)
-                saturacao = max_c - min_c
-
-                # Score: frequência + bônus por saturação
-                score = b["count"] * (1 + saturacao / 50)
-
-                candidatos.append({
-                    "r": r, "g": g, "b": bl,
-                    "score": score
-                })
-
-            if not candidatos:
+            if not melhor:
                 return {"r": 40, "g": 40, "b": 40}
 
-            candidatos.sort(key=lambda x: x["score"], reverse=True)
-            alvo = candidatos[0]
+            r = melhor["r"] // melhor["count"]
+            g = melhor["g"] // melhor["count"]
+            b = melhor["b"] // melhor["count"]
 
-            return {"r": alvo["r"], "g": alvo["g"], "b": alvo["b"]}
+            return {"r": r, "g": g, "b": b}
 
     except Exception:
         return {"r": 40, "g": 40, "b": 40}

@@ -20,7 +20,7 @@
         </div>
 
         <div class="capa-central" id="capa-central">
-            <video id="capa-principal-video" autoplay loop muted playsinline disablepictureinpicture controlslist="nodownload nofullscreen noremoteplayback noplaybackrate" style="display:none;"></video>
+            <video id="capa-principal-video" autoplay muted playsinline disablepictureinpicture controlslist="nodownload nofullscreen noremoteplayback noplaybackrate" style="display:none;"></video>
             <img id="capa-principal-img" src="" alt="">
             <img id="overlay-capa" src="/overlay.png" alt="">
         </div>
@@ -35,22 +35,31 @@
     <!-- VISUAL CAPA CHEIA -->
     <div class="painel-capa-cheia" id="painel-capa-cheia">
         <div class="capa-cheia-topo" id="capa-cheia-topo">
-            <video id="capa-cheia-video" autoplay loop muted playsinline disablepictureinpicture controlslist="nodownload nofullscreen noremoteplayback noplaybackrate" style="display:none;"></video>
+            <video id="capa-cheia-video" autoplay muted playsinline disablepictureinpicture controlslist="nodownload nofullscreen noremoteplayback noplaybackrate" style="display:none;"></video>
             <img id="capa-cheia-img" src="" alt="">
         </div>
 
-        <div class="capa-cheia-blur" id="capa-cheia-blur"></div>
-
         <div class="capa-cheia-gradiente" id="capa-cheia-gradiente"></div>
 
+        <img id="capa-cheia-overlay" class="capa-cheia-overlay" src="" alt="">
+
         <div class="capa-cheia-info" id="capa-cheia-info">
-            <div class="status-lastfm-cheio">
-                <img src="/last.svg" alt="Last.fm" class="icone-lastfm">
-                <span class="texto-lastfm"><span id="usuario-status-cheio">—</span> está ouvindo:</span>
+            <div class="marquee-container" id="marquee-album">
+                <span class="marquee-conteudo" id="album-cheio"></span>
             </div>
-            <p id="album-cheio"></p>
-            <h1 id="musica-cheio"></h1>
-            <p id="artista-cheio"></p>
+            <div class="marquee-container" id="marquee-musica">
+                <span class="marquee-conteudo" id="musica-cheio"></span>
+            </div>
+            <div class="marquee-container" id="marquee-artista">
+                <span class="marquee-conteudo" id="artista-cheio"></span>
+            </div>
+        </div>
+
+        <div class="status-lastfm-cheio">
+            <div class="icone-lastfm-wrapper">
+                <img src="/last.svg" alt="Last.fm" class="icone-lastfm">
+            </div>
+            <span id="usuario-status-cheio">—</span>
         </div>
     </div>
 
