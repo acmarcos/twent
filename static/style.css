@@ -47,14 +47,10 @@
 /* ============================================ */
 
 :root {
-    --capa-tamanho: 340px;
-    --borda-capa: 40px;
-    --titulo-tamanho: 18pt;
+    --titulo-tamanho: 20pt;
     --artista-tamanho: 14pt;
     --ouvindo-tamanho: 10pt;
     --album-tamanho: 18pt;
-    --painel-gap: 1rem;
-    --painel-pad: 0;
     --cor-texto: #fff;
     --cor-texto-secundario: rgba(255, 255, 255, 0.75); 
 }
@@ -116,19 +112,20 @@ body {
     opacity: 1;
 }
 
+/* ============================================ */
+/* LAYOUT DO PAINEL PRINCIPAL */
+/* ============================================ */
+
 .painel {
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
     z-index: 10;
     display: none;
     flex-direction: column;
-    align-items: center;
-    gap: var(--painel-gap);
-    padding: var(--painel-pad);
-    width: var(--capa-tamanho);
-    max-width: 100%;
+    align-items: flex-start;
 }
 
 .painel.visivel {
@@ -136,31 +133,79 @@ body {
 }
 
 /* ============================================ */
-/* STATUS DO LAST.FM (PADRÃO) */
+/* CAPA (METADE DE CIMA COM MÁSCARA) */
 /* ============================================ */
 
+.capa-central {
+    width: 100vw;
+    height: 60vh; /* Vai até 60% da tela para a máscara fazer o fade */
+    position: relative;
+    overflow: hidden;
+    background: transparent;
+    flex-shrink: 0;
+    /* Máscara de fade na parte de baixo da imagem */
+    -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+}
+
+#capa-principal-video,
+#capa-principal-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Corta a imagem quadrada para preencher */
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    transform: none;
+}
+
+#capa-principal-video {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/* ============================================ */
+/* INFORMAÇÕES DA MÚSICA (METADE DE BAIXO) */
+/* ============================================ */
+
+.info-musica-container {
+    width: 100%;
+    position: absolute;
+    top: 50vh; /* Começa EXATAMENTE na linha do meio da tela */
+    left: 0;
+    padding: 0 1.5rem; 
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    box-sizing: border-box;
+    z-index: 2;
+}
+
+/* Status do Last.fm */
 .status-lastfm {
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    width: 100%;
-    padding: 0;
-    box-sizing: border-box;
-    margin-bottom: 0.2rem;
+    margin-bottom: 0.5rem;
 }
 
-/* A bolinha ajustada ao tamanho do símbolo */
 .icone-lastfm-wrapper {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     background: #ffffff; 
     border-radius: 50%; 
-    padding: 1px; /* Dá 1 pixel de borda ao redor do símbolo */
+    padding: 1px; 
     flex-shrink: 0;
 }
 
-/* O símbolo com recorte */
 .icone-lastfm-mask {
     width: 9px; 
     height: 9px;
@@ -196,80 +241,7 @@ body {
     color: inherit; 
 }
 
-/* ============================================ */
-/* CAPA */
-/* ============================================ */
-
-.capa-central {
-    width: var(--capa-tamanho);
-    height: var(--capa-tamanho);
-    position: relative;
-    overflow: hidden;
-    border-radius: var(--borda-capa);
-    background: #1a1a1a;
-    align-self: center;
-    flex-shrink: 0;
-}
-
-#capa-principal-video,
-#capa-principal-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 1;
-    border-radius: var(--borda-capa);
-    transform: none;
-}
-
-#capa-principal-video {
-    will-change: transform;
-    transform: translateZ(0);
-    backface-visibility: hidden;
-    pointer-events: none;
-    user-select: none;
-    -webkit-user-select: none;
-    -webkit-touch-callout: none;
-}
-
-#overlay-capa {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: var(--borda-capa);
-    pointer-events: none;
-    z-index: 3;
-    user-select: none;
-    -webkit-user-drag: none;
-}
-
-#capa-principal-video::-webkit-media-controls,
-#capa-principal-video::-webkit-media-controls-enclosure,
-#capa-principal-video::-webkit-media-controls-panel,
-#capa-principal-video::-webkit-media-controls-play-button,
-#capa-principal-video::-webkit-media-controls-start-playback-button,
-#capa-principal-video::-webkit-media-controls-overlay-play-button,
-#capa-principal-video::-webkit-media-controls-picture-in-picture-button,
-#capa-principal-video::-webkit-media-controls-fullscreen-button,
-#capa-principal-video::-webkit-media-controls-download-button,
-#capa-principal-video::-webkit-media-controls-toggle-closed-captions-button,
-#capa-principal-video::-webkit-media-controls-volume-slider,
-#capa-principal-video::-webkit-media-controls-mute-button {
-    display: none !important;
-    -webkit-appearance: none !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-}
-
-/* ============================================ */
-/* INFORMAÇÕES DA MÚSICA */
-/* ============================================ */
-
+/* Informações (Álbum, Música, Artista) */
 .info-musica {
     display: flex;
     flex-direction: column;
@@ -277,9 +249,6 @@ body {
     text-align: left;
     gap: 0px; 
     width: 100%;
-    padding: 0;
-    padding-top: 2px;
-    padding-bottom: 2px;
 }
 
 .info-musica #album {
@@ -810,14 +779,13 @@ body.visual-capa-cheia .tela {
     width: 100%;
 }
 
-/* A bolinha na tela cheia ajustada */
 .status-lastfm-cheio .icone-lastfm-wrapper {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     background: #ffffff; 
     border-radius: 50%; 
-    padding: 1px; /* Borda de 1px */
+    padding: 1px; 
     flex-shrink: 0;
 }
 
@@ -927,10 +895,6 @@ body.visual-capa-cheia .tela {
 /* ============================================ */
 
 @media (max-width: 420px) {
-    :root {
-        --capa-tamanho: 300px;
-    }
-
     .modal-pesquisa {
         padding: 1.5rem 1rem 1rem;
     }

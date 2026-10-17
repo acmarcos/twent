@@ -14,26 +14,30 @@
 
     <!-- VISUAL PADRÃO -->
     <div class="painel" id="painel">
-        <!-- Status do Last.fm acima da capa -->
-        <div class="status-lastfm">
-            <div class="icone-lastfm-wrapper">
-                <div class="icone-lastfm-mask"></div>
-            </div>
-            <span class="texto-lastfm">
-                <span id="usuario-status">—</span> está ouvindo:
-            </span>
-        </div>
-
+        <!-- METADE DE CIMA: CAPA COM MÁSCARA -->
         <div class="capa-central" id="capa-central">
             <video id="capa-principal-video" autoplay muted playsinline disablepictureinpicture controlslist="nodownload nofullscreen noremoteplayback noplaybackrate" style="display:none;"></video>
             <img id="capa-principal-img" src="" alt="">
-            <img id="overlay-capa" src="/overlay.png" alt="">
+            <!-- Overlay antigo mantido para compatibilidade, mas oculto via CSS -->
+            <img id="overlay-capa" src="/overlay.png" alt="" style="display: none;">
         </div>
 
-        <div class="info-musica">
-            <p id="album"></p>
-            <h1 id="musica"></h1>
-            <p id="artista"></p>
+        <!-- METADE DE BAIXO: TEXTO E STATUS -->
+        <div class="info-musica-container">
+            <div class="status-lastfm">
+                <div class="icone-lastfm-wrapper">
+                    <div class="icone-lastfm-mask"></div>
+                </div>
+                <span class="texto-lastfm">
+                    <span id="usuario-status">—</span> está ouvindo:
+                </span>
+            </div>
+
+            <div class="info-musica">
+                <p id="album"></p>
+                <h1 id="musica"></h1>
+                <p id="artista"></p>
+            </div>
         </div>
     </div>
 
@@ -49,7 +53,6 @@
         <img id="capa-cheia-overlay" class="capa-cheia-overlay" src="" alt="">
 
         <div class="capa-cheia-info" id="capa-cheia-info">
-            <!-- Status do Last.fm acima do título -->
             <div class="status-lastfm-cheio">
                 <div class="icone-lastfm-wrapper">
                     <div class="icone-lastfm-mask"></div>
