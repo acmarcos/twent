@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Twent</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="tela" id="tela">
+        <img id="capa-img" src="" alt="">
+    </div>
+
+    <!-- VISUAL PADRÃO -->
+    <div class="painel" id="painel">
+        <!-- METADE DE CIMA: CAPA COM MÁSCARA -->
+        <div class="capa-central" id="capa-central">
+            <video id="capa-principal-video" autoplay muted playsinline disablepictureinpicture controlslist="nodownload nofullscreen noremoteplayback noplaybackrate" style="display:none;"></video>
+            <img id="capa-principal-img" src="" alt="">
+            <!-- Overlay antigo mantido para compatibilidade, mas oculto via CSS -->
+            <img id="overlay-capa" src="/overlay.png" alt="" style="display: none;">
+        </div>
+
+        <!-- METADE DE BAIXO: TEXTO E STATUS -->
+        <div class="info-musica-container">
+            <div class="status-lastfm">
+                <div class="icone-lastfm-wrapper">
+                    <div class="icone-lastfm-mask"></div>
+                </div>
+                <span class="texto-lastfm">
+                    <span id="usuario-status">—</span> está ouvindo:
+                </span>
+            </div>
+
+            <div class="info-musica">
+                <p id="album"></p>
+                <h1 id="musica"></h1>
+                <p id="artista"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- VISUAL CAPA CHEIA -->
+    <div class="painel-capa-cheia" id="painel-capa-cheia">
+        <div class="capa-cheia-topo" id="capa-cheia-topo">
+            <video id="capa-cheia-video" autoplay muted playsinline disablepictureinpicture controlslist="nodownload nofullscreen noremoteplayback noplaybackrate" style="display:none;"></video>
+            <img id="capa-cheia-img" src="" alt="">
+        </div>
+
+        <div class="capa-cheia-gradiente" id="capa-cheia-gradiente"></div>
+
+        <img id="capa-cheia-overlay" class="capa-cheia-overlay" src="" alt="">
+
+        <div class="capa-cheia-info" id="capa-cheia-info">
+            <div class="status-lastfm-cheio">
+                <div class="icone-lastfm-wrapper">
+                    <div class="icone-lastfm-mask"></div>
+                </div>
+                <span id="usuario-status-cheio-container">
+                    <span id="usuario-status-cheio">—</span> <span class="texto-secundario">está ouvindo:</span>
+                </span>
+            </div>
+
+            <div class="marquee-container" id="marquee-musica">
+                <span class="marquee-conteudo" id="musica-cheio"></span>
+            </div>
+            <div class="marquee-container" id="marquee-artista">
+                <span class="marquee-conteudo" id="artista-cheio"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ASSISTENTE -->
+    <div class="assistive" id="assistive">
+        <button class="assistive-btn" id="assistive-btn" aria-label="Menu"></button>
+        <div class="assistive-menu" id="assistive-menu">
+            <button class="assistive-opcao" id="opcao-pesquisar" aria-label="Pesquisar usuário">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+            <button class="assistive-opcao" id="opcao-ultimo" aria-label="Pesquisar último usuário">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+            </button>
+            <button class="assistive-opcao" id="opcao-capas" aria-label="Escolher capa">
+                <i class="fa-solid fa-images"></i>
+            </button>
+            <button class="assistive-opcao" id="opcao-visual" aria-label="Trocar visual">
+                <i class="fa-solid fa-layer-group"></i>
+            </button>
+            <button class="assistive-opcao" id="opcao-captura" aria-label="Captura de tela">
+                <i class="fa-solid fa-camera"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL DE PESQUISA -->
+    <div class="modal-pesquisa" id="modal-pesquisa">
+        <div class="modal-container">
+            <div class="modal-topo">
+                <button class="modal-voltar" id="modal-voltar" aria-label="Voltar">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div class="modal-conteudo">
+                    <input type="text" id="input-busca" placeholder="Usuário do Last.fm" autocomplete="off">
+                    <button id="btn-pesquisar-confirmar" aria-label="Confirmar">
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE CAPAS -->
+    <div class="modal-capas" id="modal-capas">
+        <div class="modal-capas-container">
+            <div class="modal-capas-topo">
+                <h2>Escolher capa</h2>
+                <button class="modal-capas-fechar" id="modal-capas-fechar" aria-label="Fechar">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <p class="modal-capas-info" id="modal-capas-info">Carregando...</p>
+            <div class="grade-capas" id="grade-capas"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+    <script src="/script.js"></script>
+</body>
+</html>

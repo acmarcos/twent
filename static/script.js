@@ -1,58 +1,29 @@
 const capaImgEl = document.getElementById('capa-img');
-
-// Painel padrão
 const capaPrincipalVideoEl = document.getElementById('capa-principal-video');
 const capaPrincipalImgEl = document.getElementById('capa-principal-img');
 const painelEl = document.getElementById('painel');
 const usuarioStatusEl = document.getElementById('usuario-status');
-const albumEl = document.getElementById('album');
 const musicaEl = document.getElementById('musica');
 const artistaEl = document.getElementById('artista');
-
-// Painel capa cheia
-const painelCapaCheiaEl = document.getElementById('painel-capa-cheia');
-const capaCheiaVideoEl = document.getElementById('capa-cheia-video');
-const capaCheiaImgEl = document.getElementById('capa-cheia-img');
-const capaCheiaOverlayEl = document.getElementById('capa-cheia-overlay');
-const usuarioStatusCheioEl = document.getElementById('usuario-status-cheio');
-const musicaCheioEl = document.getElementById('musica-cheio');
-const artistaCheioEl = document.getElementById('artista-cheio');
-
 const telaEl = document.getElementById('tela');
 
 const assistiveEl = document.getElementById('assistive');
-const assistiveBtn = document.getElementById('assistive-btn');
 const opcaoPesquisar = document.getElementById('opcao-pesquisar');
 const opcaoUltimo = document.getElementById('opcao-ultimo');
-const opcaoCapas = document.getElementById('opcao-capas');
-const opcaoVisual = document.getElementById('opcao-visual');
-const opcaoCaptura = document.getElementById('opcao-captura');
 
 const modalPesquisa = document.getElementById('modal-pesquisa');
 const modalVoltar = document.getElementById('modal-voltar');
 const inputBusca = document.getElementById('input-busca');
 const btnPesquisarConfirmar = document.getElementById('btn-pesquisar-confirmar');
 
-const modalCapas = document.getElementById('modal-capas');
-const modalCapasFechar = document.getElementById('modal-capas-fechar');
-const modalCapasInfo = document.getElementById('modal-capas-info');
-const gradeCapas = document.getElementById('grade-capas');
-
 const SERVER_URL = window.location.origin;
 const STORAGE_KEY = 'twent_ultimo_usuario';
-const STORAGE_CAPAS_CUSTOM = 'twent_capas_custom';
-const STORAGE_VISUAL = 'twent_visual';
 
 let intervaloAtualizacao = null;
 let ultimaMusica = null;
 let ultimaAtualizacao = 0;
 let usuarioAtual = null;
-let musicaAtual = null;
 let hlsInstance = null;
-let hlsCheiaInstance = null;
-let visualAtual = 'padrao';
-let marqueeTimeout = null;
-let marqueeAgendado = false;
 
 // ============================================
 // UTILIDADES DE COR
@@ -63,46 +34,6 @@ function calcularLuminancia(r, g, b) {
         return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
     });
     return 0.2126 * canais[0] + 0.7152 * canais[1] + 0.0722 * canais[2];
-}
-
-// ============================================
-// MARQUEE (só fade, sem animação)
-// ============================================
-function verificarMarquee() {
-    const pares = [
-        { container: 'marquee-musica', conteudo: 'musica-cheio' },
-        { container: 'marquee-artista', conteudo: 'artista-cheio' }
-    ];
-
-    pares.forEach(({ container, conteudo }) => {
-        const contEl = document.getElementById(container);
-        const conteudoEl = document.getElementById(conteudo);
-        if (!contEl || !conteudoEl) return;
-
-        contEl.classList.remove('marquee-ativo');
-
-        const texto = conteudoEl.textContent;
-        if (!texto || !texto.trim()) return;
-
-        const larguraTexto = conteudoEl.scrollWidth;
-        const larguraContainer = contEl.clientWidth;
-
-        if (larguraTexto > larguraContainer + 2) {
-            contEl.classList.add('marquee-ativo');
-        }
-    });
-}
-
-function agendarVerificacaoMarquee() {
-    if (marqueeAgendado) return;
-    marqueeAgendado = true;
-
-    if (marqueeTimeout) clearTimeout(marqueeTimeout);
-    marqueeTimeout = setTimeout(() => {
-        verificarMarquee();
-        marqueeTimeout = null;
-        marqueeAgendado = false;
-    }, 200);
 }
 
 // ============================================
@@ -134,30 +65,6 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ============================================
-// VISUAL
-// ============================================
-function aplicarVisual(visual) {
-    visualAtual = visual;
-    localStorage.setItem(STORAGE_VISUAL, visual);
-
-    if (visual === 'capa-cheia') {
-        document.body.classList.add('visual-capa-cheia');
-        if (musicaAtual) {
-            const dadosAtuais = obterDadosAtuais();
-            if (dadosAtuais) atualizarPainelCapaCheia(dadosAtuais);
-        }
-        agendarVerificacaoMarquee();
-    } else {
-        document.body.classList.remove('visual-capa-cheia');
-    }
-}
-
-function carregarVisualSalvo() {
-    const salvo = localStorage.getItem(STORAGE_VISUAL) || 'padrao';
-    aplicarVisual(salvo);
-}
-
-// ============================================
 // VÍDEO
 // ============================================
 function bloquearControlesVideo(video) {
@@ -170,22 +77,19 @@ function bloquearControlesVideo(video) {
 }
 
 bloquearControlesVideo(capaPrincipalVideoEl);
-bloquearControlesVideo(capaCheiaVideoEl);
 
-[capaPrincipalVideoEl, capaCheiaVideoEl].forEach((v) => {
-    v.addEventListener('enterpictureinpicture', () => {
-        if (document.pictureInPictureElement) {
-            document.exitPictureInPicture().catch(() => {});
-        }
-    });
-    v.addEventListener('contextmenu', (e) => e.preventDefault());
-    v.addEventListener('click', (e) => e.preventDefault());
-    v.addEventListener('dblclick', (e) => e.preventDefault());
-    v.addEventListener('pause', () => v.play().catch(() => {}));
+capaPrincipalVideoEl.addEventListener('enterpictureinpicture', () => {
+    if (document.pictureInPictureElement) {
+        document.exitPictureInPicture().catch(() => {});
+    }
 });
+capaPrincipalVideoEl.addEventListener('contextmenu', (e) => e.preventDefault());
+capaPrincipalVideoEl.addEventListener('click', (e) => e.preventDefault());
+capaPrincipalVideoEl.addEventListener('dblclick', (e) => e.preventDefault());
+capaPrincipalVideoEl.addEventListener('pause', () => capaPrincipalVideoEl.play().catch(() => {}));
 
 // ============================================
-// LOOP CROSSFADE OTIMIZADO PARA GECKOVIEW
+// LOOP CROSSFADE (GeckoView)
 // ============================================
 function limparLoopCrossfade(videoEl) {
     if (!videoEl || !videoEl._crossfade) return;
@@ -206,7 +110,7 @@ function limparLoopCrossfade(videoEl) {
         cf.clone = null;
     }
 
-    videoEl.loop = true; // Restaura o loop padrão
+    videoEl.loop = true;
     videoEl._crossfade = null;
 }
 
@@ -216,7 +120,6 @@ function configurarLoopCrossfade(videoEl, urlOriginal) {
 
     limparLoopCrossfade(videoEl);
 
-    // O vídeo original SEMPRE roda em loop nativo (não pausa, evita flicker no Gecko)
     videoEl.loop = true;
 
     const clone = document.createElement('video');
@@ -235,10 +138,10 @@ function configurarLoopCrossfade(videoEl, urlOriginal) {
     clone.style.height = '100%';
     clone.style.objectFit = 'cover';
     clone.style.borderRadius = 'inherit';
-    clone.style.opacity = '0'; // Começa invisível
-    clone.style.zIndex = '0'; // Fica atrás do vídeo original (que tem z-index 1)
+    clone.style.opacity = '0';
+    clone.style.zIndex = '0';
     clone.style.pointerEvents = 'none';
-    clone.style.transition = 'opacity 0.2s ease'; // Transição rápida
+    clone.style.transition = 'opacity 0.2s ease';
 
     videoEl.parentNode.appendChild(clone);
 
@@ -263,37 +166,31 @@ function configurarLoopCrossfade(videoEl, urlOriginal) {
     let trocando = false;
 
     const intervalo = setInterval(() => {
-        // Se o vídeo original não tem duração ou já está no meio de uma troca, ignora
         if (!videoEl.duration || trocando) return;
-        
+
         const restante = videoEl.duration - videoEl.currentTime;
-        
-        // Quando faltar 0.5s pro fim, aciona o clone
+
         if (restante <= 0.5) {
             trocando = true;
 
-            // Prepara e inicia o clone
             try {
                 clone.currentTime = 0;
             } catch (e) {}
             clone.play().catch(() => {});
-            
-            // Faz o clone aparecer na frente
+
             clone.style.zIndex = '2';
             clone.style.opacity = '1';
 
-            // Dá 300ms para o clone cobrir a tela, depois esconde ele e volta pro original
             setTimeout(() => {
-                // Volta o original para trás e esconde o clone
                 clone.style.opacity = '0';
-                
+
                 setTimeout(() => {
                     clone.style.zIndex = '0';
                     trocando = false;
                 }, 200);
             }, 300);
         }
-    }, 50); // Verifica a cada 50ms
+    }, 50);
 
     videoEl._crossfade = {
         clone,
@@ -302,9 +199,6 @@ function configurarLoopCrossfade(videoEl, urlOriginal) {
     };
 }
 
-// ============================================
-// TOCAR HLS (com crossfade)
-// ============================================
 function tocarHLS(videoEl, url, onHlsInstance) {
     if (!videoEl) return;
 
@@ -317,7 +211,6 @@ function tocarHLS(videoEl, url, onHlsInstance) {
     videoEl.style.opacity = '1';
     bloquearControlesVideo(videoEl);
 
-    // Força o loop nativo para o GeckoView não piscar
     videoEl.loop = true;
 
     if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
@@ -354,9 +247,6 @@ function tocarHLS(videoEl, url, onHlsInstance) {
     return null;
 }
 
-// ============================================
-// TOCAR CAPA NO PAINEL PADRÃO
-// ============================================
 function tocarCapaPadrao(staticUrl, videoUrl) {
     if (staticUrl) {
         capaPrincipalImgEl.src = staticUrl;
@@ -372,207 +262,6 @@ function tocarCapaPadrao(staticUrl, videoUrl) {
         capaPrincipalImgEl.style.display = 'block';
     }
 }
-
-// ============================================
-// TOCAR CAPA NO PAINEL CAPA CHEIA
-// ============================================
-function tocarCapaCheia(staticUrl, videoUrl) {
-    if (staticUrl) {
-        capaCheiaImgEl.src = staticUrl;
-        if (capaCheiaOverlayEl) {
-            capaCheiaOverlayEl.src = staticUrl;
-        }
-    }
-
-    if (videoUrl) {
-        capaCheiaImgEl.style.display = 'none';
-        hlsCheiaInstance = tocarHLS(capaCheiaVideoEl, videoUrl, () => hlsCheiaInstance);
-    } else if (staticUrl) {
-        capaCheiaVideoEl.style.display = 'none';
-        capaCheiaVideoEl.pause();
-        limparLoopCrossfade(capaCheiaVideoEl);
-        capaCheiaImgEl.style.display = 'block';
-    }
-}
-
-// ============================================
-// DADOS ATUAIS
-// ============================================
-let dadosMusicaAtual = null;
-
-function obterDadosAtuais() {
-    return dadosMusicaAtual;
-}
-
-// ============================================
-// ATUALIZA O PAINEL CAPA CHEIA
-// ============================================
-function atualizarPainelCapaCheia(data) {
-    if (!data) return;
-
-    usuarioStatusCheioEl.textContent = data.usuario || '—';
-    musicaCheioEl.textContent = data.track || '';
-    artistaCheioEl.textContent = data.artist || '';
-
-    if (data.dominant_color) {
-        let { r, g, b } = data.dominant_color;
-
-        const lum = calcularLuminancia(r, g, b);
-
-        if (lum > 0.5) {
-            r = Math.round(r * 0.6);
-            g = Math.round(g * 0.6);
-            b = Math.round(b * 0.6);
-        }
-
-        painelCapaCheiaEl.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
-
-        document.documentElement.style.setProperty('--cor-r', r);
-        document.documentElement.style.setProperty('--cor-g', g);
-        document.documentElement.style.setProperty('--cor-b', b);
-
-        document.documentElement.style.setProperty('--cor-texto', '#fff');
-        document.documentElement.style.setProperty(
-            '--cor-texto-secundario',
-            'rgba(255, 255, 255, 0.85)'
-        );
-    }
-
-    tocarCapaCheia(data.static_url, data.video_url);
-
-    agendarVerificacaoMarquee();
-}
-
-// ============================================
-// CAPAS CUSTOMIZADAS
-// ============================================
-function carregarCapasCustom() {
-    try {
-        return JSON.parse(localStorage.getItem(STORAGE_CAPAS_CUSTOM) || '{}');
-    } catch {
-        return {};
-    }
-}
-
-function salvarCapasCustom(dados) {
-    localStorage.setItem(STORAGE_CAPAS_CUSTOM, JSON.stringify(dados));
-}
-
-function obterCapaCustom(artist, track) {
-    const chave = `${artist}::${track}`;
-    return carregarCapasCustom()[chave] || null;
-}
-
-// ============================================
-// MODAL DE CAPAS
-// ============================================
-async function abrirModalCapas() {
-    if (!musicaAtual) {
-        alert('Nenhuma música tocando.');
-        return;
-    }
-
-    assistiveEl.classList.remove('aberto');
-    modalCapas.classList.add('ativo');
-    gradeCapas.innerHTML = '';
-    modalCapasInfo.textContent = 'Carregando capas...';
-
-    const { artist, track } = musicaAtual;
-
-    try {
-        const url = `${SERVER_URL}/api/capas-alternativas?artist=${encodeURIComponent(artist)}&track=${encodeURIComponent(track)}`;
-        const resp = await fetch(url);
-        const capas = await resp.json();
-
-        if (!Array.isArray(capas) || capas.length === 0) {
-            modalCapasInfo.textContent = 'Nenhuma capa alternativa encontrada.';
-            return;
-        }
-
-        modalCapasInfo.textContent = `${capas.length} capas encontradas. Toque numa pra escolher.`;
-
-        const custom = carregarCapasCustom();
-        const chave = `${artist}::${track}`;
-        const escolhidaAtual = custom[chave];
-        const urlAtual = escolhidaAtual ? escolhidaAtual.url : null;
-
-        capas.forEach((c) => {
-            const div = document.createElement('div');
-            div.className = 'capa-opcao';
-
-            if (urlAtual && (urlAtual === c.video_url || urlAtual === c.static_url)) {
-                div.classList.add('selecionada');
-            }
-
-            if (c.tem_animada && c.video_url) {
-                const video = document.createElement('video');
-                video.src = c.video_url;
-                video.autoplay = true;
-                video.loop = true;
-                video.muted = true;
-                video.playsInline = true;
-                video.setAttribute('disablepictureinpicture', '');
-                video.setAttribute('controlslist', 'nodownload nofullscreen noremoteplayback');
-                div.appendChild(video);
-
-                const badge = document.createElement('div');
-                badge.className = 'capa-badge';
-                badge.textContent = 'ANIMADA';
-                div.appendChild(badge);
-            } else {
-                const img = document.createElement('img');
-                img.src = c.static_url;
-                img.alt = c.album;
-                div.appendChild(img);
-            }
-
-            const nome = document.createElement('div');
-            nome.className = 'capa-album-nome';
-            nome.textContent = c.album || 'Sem nome';
-            div.appendChild(nome);
-
-            div.addEventListener('click', () => {
-                gradeCapas.querySelectorAll('.capa-opcao').forEach(el => el.classList.remove('selecionada'));
-                div.classList.add('selecionada');
-
-                const dados = carregarCapasCustom();
-                if (c.tem_animada && c.video_url) {
-                    dados[chave] = { tipo: 'animada', url: c.video_url };
-                } else {
-                    dados[chave] = { tipo: 'estatica', url: c.static_url };
-                }
-                salvarCapasCustom(dados);
-
-                if (dadosMusicaAtual) {
-                    if (c.tem_animada && c.video_url) {
-                        dadosMusicaAtual.video_url = c.video_url;
-                        dadosMusicaAtual.static_url = c.static_url;
-                    } else {
-                        dadosMusicaAtual.video_url = null;
-                        dadosMusicaAtual.static_url = c.static_url;
-                    }
-                    tocarCapaPadrao(dadosMusicaAtual.static_url, dadosMusicaAtual.video_url);
-                    tocarCapaCheia(dadosMusicaAtual.static_url, dadosMusicaAtual.video_url);
-                }
-            });
-
-            gradeCapas.appendChild(div);
-        });
-    } catch (error) {
-        console.error('Erro ao buscar capas:', error);
-        modalCapasInfo.textContent = 'Erro ao buscar capas.';
-    }
-}
-
-modalCapasFechar.addEventListener('click', () => {
-    modalCapas.classList.remove('ativo');
-});
-
-modalCapas.addEventListener('click', (e) => {
-    if (e.target === modalCapas) {
-        modalCapas.classList.remove('ativo');
-    }
-});
 
 // ============================================
 // LAST.FM
@@ -604,49 +293,20 @@ async function carregarLastFm(userEspecifico = null, forcar = false) {
         ultimaMusica = assinaturaAtual;
         ultimaAtualizacao = agora;
 
-        const capaCustom = obterCapaCustom(data.artist, data.track);
-        let staticUrl = data.static_url;
-        let videoUrl = data.video_url;
-
-        if (capaCustom) {
-            if (capaCustom.tipo === 'animada') {
-                videoUrl = capaCustom.url;
-            } else {
-                staticUrl = capaCustom.url;
-                videoUrl = null;
-            }
-        }
-
-        dadosMusicaAtual = {
-            usuario: user,
-            artist: data.artist,
-            track: data.track,
-            album: data.album,
-            static_url: staticUrl,
-            video_url: videoUrl,
-            dominant_color: data.dominant_color
-        };
-
-        musicaAtual = { artist: data.artist, track: data.track };
-
         painelEl.classList.add('visivel');
         usuarioStatusEl.textContent = user;
-        albumEl.textContent = data.album || '';
         musicaEl.textContent = data.track;
         artistaEl.textContent = data.artist;
 
-        if (staticUrl) {
-            capaImgEl.src = staticUrl;
+        if (data.static_url) {
+            capaImgEl.src = data.static_url;
             capaImgEl.classList.add('visivel');
         }
 
-        tocarCapaPadrao(staticUrl, videoUrl);
-
-        atualizarPainelCapaCheia(dadosMusicaAtual);
+        tocarCapaPadrao(data.static_url, data.video_url);
 
         if (data.dominant_color) {
             let { r, g, b } = data.dominant_color;
-
             const lum = calcularLuminancia(r, g, b);
 
             if (lum > 0.5) {
@@ -656,14 +316,9 @@ async function carregarLastFm(userEspecifico = null, forcar = false) {
             }
 
             telaEl.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
-
             document.documentElement.style.setProperty('--cor-r', r);
             document.documentElement.style.setProperty('--cor-g', g);
             document.documentElement.style.setProperty('--cor-b', b);
-
-            if (painelCapaCheiaEl) {
-                painelCapaCheiaEl.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
-            }
         }
 
     } catch (error) {
@@ -690,58 +345,71 @@ function iniciarAtualizacaoAutomatica(user) {
 }
 
 // ============================================
-// CAPTURA DE TELA
+// LÓGICA DO ASSISTENTE
 // ============================================
-async function capturarTela() {
-    try {
-        assistiveEl.classList.remove('aberto');
-        assistiveEl.style.visibility = 'hidden';
-        await new Promise(r => setTimeout(r, 100));
+let timeoutOcultar = null;
 
-        const canvas = await html2canvas(document.body, {
-            backgroundColor: null,
-            useCORS: true,
-            allowTaint: false,
-            scale: window.devicePixelRatio || 2,
-            logging: false
-        });
-
-        const link = document.createElement('a');
-        link.download = `twent-${Date.now()}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-    } catch (error) {
-        console.error('Erro na captura:', error);
-        alert('Não foi possível capturar a tela.');
-    } finally {
-        assistiveEl.style.visibility = '';
+function mostrarAssistente() {
+    assistiveEl.classList.add('ativo');
+    if (timeoutOcultar) {
+        clearTimeout(timeoutOcultar);
+        timeoutOcultar = null;
     }
 }
 
-// ============================================
-// EVENTOS
-// ============================================
-assistiveBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    assistiveEl.classList.toggle('aberto');
-});
+function esconderAssistente() {
+    timeoutOcultar = setTimeout(() => {
+        assistiveEl.classList.remove('ativo');
+    }, 300);
+}
 
-document.addEventListener('click', (e) => {
-    if (!assistiveEl.contains(e.target)) {
-        assistiveEl.classList.remove('aberto');
+document.addEventListener('touchstart', (e) => {
+    if (!modalPesquisa.classList.contains('ativo')) {
+        mostrarAssistente();
+    }
+}, { passive: true });
+
+document.addEventListener('touchend', () => {
+    if (!modalPesquisa.classList.contains('ativo')) {
+        esconderAssistente();
     }
 });
 
+document.addEventListener('mousedown', (e) => {
+    if (!modalPesquisa.classList.contains('ativo')) {
+        mostrarAssistente();
+    }
+});
+
+document.addEventListener('mouseup', () => {
+    if (!modalPesquisa.classList.contains('ativo')) {
+        esconderAssistente();
+    }
+});
+
+assistiveEl.addEventListener('touchstart', (e) => {
+    e.stopPropagation();
+    mostrarAssistente();
+}, { passive: true });
+assistiveEl.addEventListener('touchend', (e) => {
+    e.stopPropagation();
+    esconderAssistente();
+}, { passive: true });
+
+assistiveEl.addEventListener('mouseenter', mostrarAssistente);
+assistiveEl.addEventListener('mouseleave', esconderAssistente);
+
+// ============================================
+// EVENTOS DOS BOTÕES
+// ============================================
 opcaoPesquisar.addEventListener('click', (e) => {
     e.stopPropagation();
-    assistiveEl.classList.remove('aberto');
     modalPesquisa.classList.add('ativo');
     inputBusca.focus();
 });
 
 opcaoUltimo.addEventListener('click', (e) => {
     e.stopPropagation();
-    assistiveEl.classList.remove('aberto');
     const ultimo = localStorage.getItem(STORAGE_KEY);
     if (!ultimo) {
         alert('Nenhum usuário pesquisado ainda.');
@@ -749,23 +417,6 @@ opcaoUltimo.addEventListener('click', (e) => {
     }
     inputBusca.value = ultimo;
     iniciarAtualizacaoAutomatica(ultimo);
-});
-
-opcaoCapas.addEventListener('click', (e) => {
-    e.stopPropagation();
-    abrirModalCapas();
-});
-
-opcaoVisual.addEventListener('click', (e) => {
-    e.stopPropagation();
-    assistiveEl.classList.remove('aberto');
-    const novo = visualAtual === 'padrao' ? 'capa-cheia' : 'padrao';
-    aplicarVisual(novo);
-});
-
-opcaoCaptura.addEventListener('click', (e) => {
-    e.stopPropagation();
-    capturarTela();
 });
 
 btnPesquisarConfirmar.addEventListener('click', () => {
@@ -792,73 +443,3 @@ modalVoltar.addEventListener('click', (e) => {
     modalPesquisa.classList.remove('ativo');
     inputBusca.value = '';
 });
-
-// ============================================
-// ARRASTAR BOTÃO FLUTUANTE
-// ============================================
-let arrastando = false;
-let offsetX, offsetY;
-
-assistiveBtn.addEventListener('mousedown', (e) => {
-    arrastando = true;
-    const rect = assistiveEl.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
-    assistiveEl.style.transition = 'none';
-    e.preventDefault();
-});
-
-document.addEventListener('mousemove', (e) => {
-    if (!arrastando) return;
-    const x = e.clientX - offsetX;
-    const y = e.clientY - offsetY;
-    const largura = assistiveBtn.offsetWidth;
-    const altura = assistiveBtn.offsetHeight;
-    const maxX = window.innerWidth - largura;
-    const maxY = window.innerHeight - altura;
-    assistiveEl.style.left = Math.max(0, Math.min(maxX, x)) + 'px';
-    assistiveEl.style.top = Math.max(0, Math.min(maxY, y)) + 'px';
-    assistiveEl.style.right = 'auto';
-    assistiveEl.style.bottom = 'auto';
-});
-
-document.addEventListener('mouseup', () => {
-    if (arrastando) {
-        assistiveEl.style.transition = '';
-        arrastando = false;
-    }
-});
-
-assistiveBtn.addEventListener('touchstart', (e) => {
-    arrastando = true;
-    const rect = assistiveEl.getBoundingClientRect();
-    offsetX = e.touches[0].clientX - rect.left;
-    offsetY = e.touches[0].clientY - rect.top;
-    assistiveEl.style.transition = 'none';
-}, { passive: true });
-
-document.addEventListener('touchmove', (e) => {
-    if (!arrastando) return;
-    const x = e.touches[0].clientX - offsetX;
-    const y = e.touches[0].clientY - offsetY;
-    const largura = assistiveBtn.offsetWidth;
-    const altura = assistiveBtn.offsetHeight;
-    const maxX = window.innerWidth - largura;
-    const maxY = window.innerHeight - altura;
-    assistiveEl.style.left = Math.max(0, Math.min(maxX, x)) + 'px';
-    assistiveEl.style.top = Math.max(0, Math.min(maxY, y)) + 'px';
-    assistiveEl.style.right = 'auto';
-    assistiveEl.style.bottom = 'auto';
-}, { passive: true });
-
-document.addEventListener('touchend', () => {
-    if (arrastando) {
-        assistiveEl.style.transition = '';
-        arrastando = false;
-    }
-});
-
-// ============================================
-// INICIALIZAÇÃO
-// ============================================
-carregarVisualSalvo();
