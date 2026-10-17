@@ -13,6 +13,7 @@ const artistaEl = document.getElementById('artista');
 const painelCapaCheiaEl = document.getElementById('painel-capa-cheia');
 const capaCheiaVideoEl = document.getElementById('capa-cheia-video');
 const capaCheiaImgEl = document.getElementById('capa-cheia-img');
+const capaCheiaBlurEl = document.getElementById('capa-cheia-blur');
 const capaCheiaGradienteEl = document.getElementById('capa-cheia-gradiente');
 const usuarioStatusCheioEl = document.getElementById('usuario-status-cheio');
 const albumCheioEl = document.getElementById('album-cheio');
@@ -104,7 +105,7 @@ function carregarVisualSalvo() {
 }
 
 // ============================================
-// VÍDEO — CONTROLE GERAL
+// VÍDEO
 // ============================================
 function bloquearControlesVideo(video) {
     if (!video) return;
@@ -192,11 +193,13 @@ function tocarCapaPadrao(staticUrl, videoUrl) {
 }
 
 // ============================================
-// TOCAR CAPA NO PAINEL CAPA CHEIA
+// TOCAR CAPA NO PAINEL CAPA CHEIA (com blur)
 // ============================================
 function tocarCapaCheia(staticUrl, videoUrl) {
     if (staticUrl) {
         capaCheiaImgEl.src = staticUrl;
+        // Atualiza o fundo blur com a mesma capa
+        capaCheiaBlurEl.style.backgroundImage = `url('${staticUrl}')`;
     }
 
     if (videoUrl) {
