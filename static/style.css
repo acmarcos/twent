@@ -763,7 +763,7 @@ body.visual-capa-cheia .tela {
     );
 }
 
-/* --- 3. CAPA OVERLAY (100% opacidade, blur 100px, saturação 300%) --- */
+/* --- 3. CAPA OVERLAY (200% saturação, 50% opacidade) --- */
 
 .capa-cheia-overlay {
     position: absolute;
@@ -774,8 +774,8 @@ body.visual-capa-cheia .tela {
     object-fit: cover;
     z-index: 2;
     pointer-events: none;
-    filter: blur(100px) saturate(3);
-    opacity: 1;
+    filter: blur(100px) saturate(2);
+    opacity: 0.5;
     -webkit-mask-image: linear-gradient(
         to bottom,
         transparent 0%,
