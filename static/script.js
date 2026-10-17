@@ -53,6 +53,7 @@ let hlsInstance = null;
 let hlsCheiaInstance = null;
 let visualAtual = 'padrao';
 let marqueeTimeout = null;
+let marqueeAgendado = false;
 
 // ============================================
 // UTILIDADES DE COR
@@ -66,43 +67,7 @@ function calcularLuminancia(r, g, b) {
 }
 
 // ============================================
-// LOOP SUAVE DE VÍDEO COM CROSSFADE (sem piscar)
-// ============================================
-function configurarLoopSuave(videoEl) {
-    if (!videoEl) return;
-
-    let reiniciando = false;
-
-    videoEl.addEventListener('timeupdate', () => {
-        if (!videoEl.duration || reiniciando) return;
-
-        const restante = videoEl.duration - videoEl.currentTime;
-
-        // Fade out nos últimos 0.4s
-        if (restante < 0.4 && restante > 0) {
-            videoEl.style.opacity = String(restante / 0.4);
-        }
-
-        // Reinicia quando faltar 0.15s
-        if (restante <= 0.15) {
-            reiniciando = true;
-            videoEl.currentTime = 0;
-            videoEl.style.opacity = '0';
-
-            // Fade in depois do reinício
-            setTimeout(() => {
-                videoEl.style.opacity = '1';
-                reiniciando = false;
-            }, 50);
-        }
-    });
-}
-
-configurarLoopSuave(capaPrincipalVideoEl);
-configurarLoopSuave(capaCheiaVideoEl);
-
-// ============================================
-// MARQUEE SIMPLES
+// MARQUEE 100% CSS (JS só mede e ativa)
 // ============================================
 function verificarMarquee() {
     const pares = [
@@ -134,11 +99,15 @@ function verificarMarquee() {
 }
 
 function agendarVerificacaoMarquee() {
+    if (marqueeAgendado) return;
+    marqueeAgendado = true;
+
     if (marqueeTimeout) clearTimeout(marqueeTimeout);
     marqueeTimeout = setTimeout(() => {
         verificarMarquee();
         marqueeTimeout = null;
-    }, 100);
+        marqueeAgendado = false;
+    }, 200);
 }
 
 // ============================================
@@ -221,7 +190,7 @@ bloquearControlesVideo(capaCheiaVideoEl);
 });
 
 // ============================================
-// TOCAR HLS
+// TOCAR HLS (com loop nativo)
 // ============================================
 function tocarHLS(videoEl, url, onHlsInstance) {
     if (!videoEl) return;
@@ -232,6 +201,9 @@ function tocarHLS(videoEl, url, onHlsInstance) {
     videoEl.style.display = 'block';
     videoEl.style.opacity = '1';
     bloquearControlesVideo(videoEl);
+
+    // Garante o loop nativo
+    videoEl.loop = true;
 
     if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
         videoEl.src = url;

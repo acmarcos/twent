@@ -208,6 +208,13 @@ body {
     transform: none;
 }
 
+/* Força GPU nos vídeos */
+#capa-principal-video {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
 #overlay-capa {
     position: absolute;
     inset: 0;
@@ -658,7 +665,7 @@ body.visual-capa-cheia .tela {
     display: none !important;
 }
 
-/* --- 1. GRADIENTE (cor sólida por baixo — z-index 0) --- */
+/* --- 1. GRADIENTE (cor sólida por baixo) --- */
 
 .capa-cheia-gradiente {
     position: absolute;
@@ -673,7 +680,7 @@ body.visual-capa-cheia .tela {
     );
 }
 
-/* --- 2. CAPA NÍTIDA (com máscara fade out embaixo — z-index 2) --- */
+/* --- 2. CAPA NÍTIDA (com máscara fade out embaixo) --- */
 
 .capa-cheia-topo {
     position: absolute;
@@ -682,7 +689,6 @@ body.visual-capa-cheia .tela {
     right: 0;
     height: 75vh;
     overflow: hidden;
-    z-index: 2;
     background: transparent;
 }
 
@@ -694,7 +700,7 @@ body.visual-capa-cheia .tela {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    z-index: 0;
+    z-index: 1;
     pointer-events: none;
     user-select: none;
     -webkit-user-select: none;
@@ -702,6 +708,13 @@ body.visual-capa-cheia .tela {
     transition: opacity 0.15s ease;
     -webkit-mask-image: linear-gradient(to bottom, black 0%, black 40%, transparent 100%);
     mask-image: linear-gradient(to bottom, black 0%, black 40%, transparent 100%);
+}
+
+/* Força GPU no vídeo da capa cheia */
+#capa-cheia-video {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
 }
 
 #capa-cheia-video::-webkit-media-controls,
@@ -722,7 +735,7 @@ body.visual-capa-cheia .tela {
     pointer-events: none !important;
 }
 
-/* --- 3. CAPA OVERLAY (z-index 3) --- */
+/* --- 3. CAPA OVERLAY --- */
 
 .capa-cheia-overlay {
     position: absolute;
@@ -766,7 +779,7 @@ body.visual-capa-cheia .tela {
     text-align: left;
 }
 
-/* --- Marquee simples --- */
+/* --- Marquee 100% CSS (roda no compositor) --- */
 
 .capa-cheia-info .marquee-container {
     width: 100%;
@@ -796,7 +809,9 @@ body.visual-capa-cheia .tela {
     white-space: nowrap;
 }
 
+/* Animação só roda quando a classe é ativa, e roda no compositor (transform) */
 .capa-cheia-info .marquee-container.marquee-ativo .marquee-conteudo {
+    will-change: transform;
     animation: marquee-slide 8s ease-in-out infinite alternate;
 }
 
@@ -809,7 +824,7 @@ body.visual-capa-cheia .tela {
     }
 }
 
-/* --- Álbum: ALL CAPS, Bold, 8px, opacidade 30% --- */
+/* --- Álbum --- */
 
 .capa-cheia-info #album-cheio {
     font-family: 'MinhaFonteBold', system-ui, sans-serif;
@@ -829,7 +844,7 @@ body.visual-capa-cheia .tela {
     display: none;
 }
 
-/* --- Música: 20px --- */
+/* --- Música --- */
 
 .capa-cheia-info #musica-cheio {
     font-family: 'MinhaFonteHeavy', system-ui, sans-serif;
@@ -844,7 +859,7 @@ body.visual-capa-cheia .tela {
     text-align: left;
 }
 
-/* --- Artista: 13px, Regular --- */
+/* --- Artista --- */
 
 .capa-cheia-info #artista-cheio {
     font-family: 'MinhaFonteRegular', system-ui, sans-serif;
@@ -858,7 +873,7 @@ body.visual-capa-cheia .tela {
     text-align: left;
 }
 
-/* --- 5. STATUS LAST.FM fixo na parte de baixo, alinhado à esquerda --- */
+/* --- 5. STATUS LAST.FM --- */
 
 .status-lastfm-cheio {
     position: fixed;
