@@ -15,7 +15,6 @@ const capaCheiaVideoEl = document.getElementById('capa-cheia-video');
 const capaCheiaImgEl = document.getElementById('capa-cheia-img');
 const capaCheiaOverlayEl = document.getElementById('capa-cheia-overlay');
 const usuarioStatusCheioEl = document.getElementById('usuario-status-cheio');
-const albumCheioEl = document.getElementById('album-cheio');
 const musicaCheioEl = document.getElementById('musica-cheio');
 const artistaCheioEl = document.getElementById('artista-cheio');
 
@@ -67,11 +66,10 @@ function calcularLuminancia(r, g, b) {
 }
 
 // ============================================
-// MARQUEE 100% CSS (JS só mede e ativa)
+// MARQUEE (só fade, sem animação)
 // ============================================
 function verificarMarquee() {
     const pares = [
-        { container: 'marquee-album', conteudo: 'album-cheio' },
         { container: 'marquee-musica', conteudo: 'musica-cheio' },
         { container: 'marquee-artista', conteudo: 'artista-cheio' }
     ];
@@ -82,7 +80,6 @@ function verificarMarquee() {
         if (!contEl || !conteudoEl) return;
 
         contEl.classList.remove('marquee-ativo');
-        contEl.style.removeProperty('--deslocamento');
 
         const texto = conteudoEl.textContent;
         if (!texto || !texto.trim()) return;
@@ -91,8 +88,6 @@ function verificarMarquee() {
         const larguraContainer = contEl.clientWidth;
 
         if (larguraTexto > larguraContainer + 2) {
-            const deslocamento = -(larguraTexto - larguraContainer);
-            contEl.style.setProperty('--deslocamento', deslocamento + 'px');
             contEl.classList.add('marquee-ativo');
         }
     });
@@ -190,10 +185,131 @@ bloquearControlesVideo(capaCheiaVideoEl);
 });
 
 // ============================================
-// TOCAR HLS (com loop nativo)
+// LOOP CROSSFADE COM DOIS VÍDEOS PRÉ-CARREGADOS
+// ============================================
+function limparLoopCrossfade(videoEl) {
+    if (!videoEl || !videoEl._crossfade) return;
+
+    const cf = videoEl._crossfade;
+
+    if (cf.intervalo) {
+        clearInterval(cf.intervalo);
+        cf.intervalo = null;
+    }
+
+    if (cf.clone) {
+        if (cf.clone._hls) {
+            cf.clone._hls.destroy();
+            cf.clone._hls = null;
+        }
+        cf.clone.remove();
+        cf.clone = null;
+    }
+
+    videoEl._crossfade = null;
+}
+
+function configurarLoopCrossfade(videoEl, urlOriginal) {
+    if (!videoEl) return;
+    if (!urlOriginal) return;
+
+    limparLoopCrossfade(videoEl);
+
+    const clone = document.createElement('video');
+    clone.autoplay = false;
+    clone.loop = false;
+    clone.muted = true;
+    clone.playsInline = true;
+    clone.setAttribute('playsinline', '');
+    clone.setAttribute('disablepictureinpicture', '');
+    clone.setAttribute('controlslist', 'nodownload nofullscreen noremoteplayback');
+
+    clone.style.position = 'absolute';
+    clone.style.top = '0';
+    clone.style.left = '0';
+    clone.style.width = '100%';
+    clone.style.height = '100%';
+    clone.style.objectFit = 'cover';
+    clone.style.borderRadius = 'inherit';
+    clone.style.opacity = '0';
+    clone.style.zIndex = '0';
+    clone.style.pointerEvents = 'none';
+    clone.style.transition = 'opacity 0.35s ease';
+
+    videoEl.parentNode.appendChild(clone);
+    videoEl.style.transition = 'opacity 0.35s ease';
+
+    let hlsClone = null;
+    if (clone.canPlayType('application/vnd.apple.mpegurl')) {
+        clone.src = urlOriginal;
+        clone.load();
+    } else if (window.Hls && window.Hls.isSupported()) {
+        hlsClone = new window.Hls({
+            enableWorker: true,
+            lowLatencyMode: false,
+            backBufferLength: 90
+        });
+        hlsClone.loadSource(urlOriginal);
+        hlsClone.attachMedia(clone);
+        clone._hls = hlsClone;
+    } else {
+        clone.src = urlOriginal;
+        clone.load();
+    }
+
+    let ativo = videoEl;
+    let inativo = clone;
+    let trocando = false;
+
+    function fazerTroca() {
+        if (trocando) return;
+        trocando = true;
+
+        try {
+            inativo.currentTime = 0;
+        } catch (e) {}
+        inativo.play().catch(() => {});
+
+        inativo.style.opacity = '1';
+        ativo.style.opacity = '0';
+
+        setTimeout(() => {
+            try {
+                ativo.pause();
+                ativo.currentTime = 0;
+            } catch (e) {}
+            ativo.style.opacity = '0';
+
+            const temp = ativo;
+            ativo = inativo;
+            inativo = temp;
+
+            trocando = false;
+        }, 400);
+    }
+
+    const intervalo = setInterval(() => {
+        if (!ativo.duration || trocando) return;
+        const restante = ativo.duration - ativo.currentTime;
+        if (restante <= 0.6) {
+            fazerTroca();
+        }
+    }, 80);
+
+    videoEl._crossfade = {
+        clone,
+        hlsClone,
+        intervalo
+    };
+}
+
+// ============================================
+// TOCAR HLS (com crossfade)
 // ============================================
 function tocarHLS(videoEl, url, onHlsInstance) {
     if (!videoEl) return;
+
+    limparLoopCrossfade(videoEl);
 
     const anterior = onHlsInstance ? onHlsInstance() : null;
     if (anterior) anterior.destroy();
@@ -202,12 +318,12 @@ function tocarHLS(videoEl, url, onHlsInstance) {
     videoEl.style.opacity = '1';
     bloquearControlesVideo(videoEl);
 
-    // Garante o loop nativo
-    videoEl.loop = true;
+    videoEl.loop = false;
 
     if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
         videoEl.src = url;
         videoEl.play().catch(() => {});
+        setTimeout(() => configurarLoopCrossfade(videoEl, url), 800);
         return null;
     }
 
@@ -221,6 +337,7 @@ function tocarHLS(videoEl, url, onHlsInstance) {
         hls.attachMedia(videoEl);
         hls.on(window.Hls.Events.MANIFEST_PARSED, () => {
             videoEl.play().catch(() => {});
+            setTimeout(() => configurarLoopCrossfade(videoEl, url), 800);
         });
         hls.on(window.Hls.Events.ERROR, (event, data) => {
             if (data.fatal) {
@@ -233,6 +350,7 @@ function tocarHLS(videoEl, url, onHlsInstance) {
 
     videoEl.src = url;
     videoEl.play().catch(() => {});
+    setTimeout(() => configurarLoopCrossfade(videoEl, url), 800);
     return null;
 }
 
@@ -250,6 +368,7 @@ function tocarCapaPadrao(staticUrl, videoUrl) {
     } else if (staticUrl) {
         capaPrincipalVideoEl.style.display = 'none';
         capaPrincipalVideoEl.pause();
+        limparLoopCrossfade(capaPrincipalVideoEl);
         capaPrincipalImgEl.style.display = 'block';
     }
 }
@@ -271,6 +390,7 @@ function tocarCapaCheia(staticUrl, videoUrl) {
     } else if (staticUrl) {
         capaCheiaVideoEl.style.display = 'none';
         capaCheiaVideoEl.pause();
+        limparLoopCrossfade(capaCheiaVideoEl);
         capaCheiaImgEl.style.display = 'block';
     }
 }
@@ -291,12 +411,19 @@ function atualizarPainelCapaCheia(data) {
     if (!data) return;
 
     usuarioStatusCheioEl.textContent = data.usuario || '—';
-    albumCheioEl.textContent = data.album || '';
     musicaCheioEl.textContent = data.track || '';
     artistaCheioEl.textContent = data.artist || '';
 
     if (data.dominant_color) {
-        const { r, g, b } = data.dominant_color;
+        let { r, g, b } = data.dominant_color;
+
+        const lum = calcularLuminancia(r, g, b);
+
+        if (lum > 0.5) {
+            r = Math.round(r * 0.6);
+            g = Math.round(g * 0.6);
+            b = Math.round(b * 0.6);
+        }
 
         painelCapaCheiaEl.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
 
@@ -304,16 +431,10 @@ function atualizarPainelCapaCheia(data) {
         document.documentElement.style.setProperty('--cor-g', g);
         document.documentElement.style.setProperty('--cor-b', b);
 
-        const lum = calcularLuminancia(r, g, b);
-        const textoEscuro = lum > 0.5;
-
-        document.documentElement.style.setProperty(
-            '--cor-texto',
-            textoEscuro ? '#000' : '#fff'
-        );
+        document.documentElement.style.setProperty('--cor-texto', '#fff');
         document.documentElement.style.setProperty(
             '--cor-texto-secundario',
-            textoEscuro ? 'rgba(0, 0, 0, 0.75)' : 'rgba(255, 255, 255, 0.85)'
+            'rgba(255, 255, 255, 0.85)'
         );
     }
 
@@ -508,7 +629,6 @@ async function carregarLastFm(userEspecifico = null, forcar = false) {
 
         musicaAtual = { artist: data.artist, track: data.track };
 
-        // Painel padrão
         painelEl.classList.add('visivel');
         usuarioStatusEl.textContent = user;
         albumEl.textContent = data.album || '';
@@ -522,12 +642,18 @@ async function carregarLastFm(userEspecifico = null, forcar = false) {
 
         tocarCapaPadrao(staticUrl, videoUrl);
 
-        // Painel capa cheia
         atualizarPainelCapaCheia(dadosMusicaAtual);
 
-        // Cor dominante (pura, sem clarear)
         if (data.dominant_color) {
-            const { r, g, b } = data.dominant_color;
+            let { r, g, b } = data.dominant_color;
+
+            const lum = calcularLuminancia(r, g, b);
+
+            if (lum > 0.5) {
+                r = Math.round(r * 0.6);
+                g = Math.round(g * 0.6);
+                b = Math.round(b * 0.6);
+            }
 
             telaEl.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
 
