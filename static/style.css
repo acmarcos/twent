@@ -656,17 +656,19 @@ body.visual-capa-cheia .tela {
     display: none !important;
 }
 
-/* --- Capa ocupando 60% da altura --- */
+/* 1. CAPA (com arco na base) */
 
 .capa-cheia-topo {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 60vh;
+    height: 65vh;
     overflow: hidden;
     z-index: 1;
     background: #1a1a1a;
+    border-bottom-left-radius: 50% 12vh;
+    border-bottom-right-radius: 50% 12vh;
 }
 
 #capa-cheia-video,
@@ -680,59 +682,65 @@ body.visual-capa-cheia .tela {
     left: 0;
 }
 
-/* --- Capa desfocada na parte de baixo (mescla com a capa) --- */
+/* 2. BLUR (cobre a emenda entre capa e fundo) */
 
 .capa-cheia-blur {
     position: absolute;
     left: 0;
     right: 0;
-    top: 30vh;
+    top: 35vh;
     height: 40vh;
     z-index: 2;
     pointer-events: none;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    filter: blur(40px) saturate(2) brightness(0.9);
-    transform: scale(1.2);
-    transform-origin: center bottom;
-    opacity: 0.85;
+    filter: blur(60px) saturate(2.5) brightness(1);
+    transform: scale(1.4);
+    transform-origin: center;
+    opacity: 0.95;
     -webkit-mask-image: linear-gradient(
         to bottom,
         transparent 0%,
-        black 30%,
-        black 70%,
+        rgba(0,0,0,0.3) 10%,
+        black 25%,
+        black 75%,
+        rgba(0,0,0,0.3) 90%,
         transparent 100%
     );
     mask-image: linear-gradient(
         to bottom,
         transparent 0%,
-        black 30%,
-        black 70%,
+        rgba(0,0,0,0.3) 10%,
+        black 25%,
+        black 75%,
+        rgba(0,0,0,0.3) 90%,
         transparent 100%
     );
 }
 
-/* --- Gradiente por cima, dissolvendo na cor dominante --- */
+/* 3. GRADIENTE (cor dominante por cima) */
 
 .capa-cheia-gradiente {
     position: absolute;
     left: 0;
     right: 0;
-    top: 25vh;
-    height: 35vh;
+    top: 35vh;
+    height: 50vh;
     z-index: 3;
     pointer-events: none;
     background: linear-gradient(
         to bottom,
         rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 0) 0%,
-        rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 0.2) 40%,
-        rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 0.6) 70%,
-        rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 0.95) 100%
+        rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 0.1) 20%,
+        rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 0.35) 45%,
+        rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 0.7) 70%,
+        rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 0.95) 90%,
+        rgba(var(--cor-r, 10), var(--cor-g, 10), var(--cor-b, 10), 1) 100%
     );
 }
 
-/* --- Informações no canto inferior esquerdo --- */
+/* 4. INFORMAÇÕES (por cima de tudo) */
 
 .capa-cheia-info {
     position: absolute;
@@ -800,7 +808,7 @@ body.visual-capa-cheia .tela {
     text-overflow: ellipsis;
 }
 
-/* --- Vídeo sem controles --- */
+/* 5. VÍDEO SEM CONTROLES */
 
 #capa-cheia-video {
     pointer-events: none;
@@ -872,20 +880,10 @@ body.visual-capa-cheia .tela {
         gap: 0.5rem;
     }
 
-    .capa-cheia-blur {
-        top: 25vh;
-        height: 45vh;
-        filter: blur(30px) saturate(2) brightness(0.9);
+    .capa-cheia-topo {
+        height: 60vh;
+        border-bottom-left-radius: 50% 10vh;
+        border-bottom-right-radius: 50% 10vh;
     }
 
-    .capa-cheia-gradiente {
-        top: 20vh;
-        height: 40vh;
-    }
-
-    .capa-cheia-info {
-        bottom: 5.5rem;
-        left: 1rem;
-        right: 1rem;
-    }
-}
+  
