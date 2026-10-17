@@ -14,9 +14,14 @@
 
     <!-- VISUAL PADRÃO -->
     <div class="painel" id="painel">
+        <!-- Status do Last.fm acima da capa -->
         <div class="status-lastfm">
-            <img src="/last.svg" alt="Last.fm" class="icone-lastfm">
-            <span class="texto-lastfm"><span id="usuario-status">—</span> está ouvindo:</span>
+            <div class="icone-lastfm-wrapper">
+                <div class="icone-lastfm-mask"></div>
+            </div>
+            <span class="texto-lastfm">
+                <span id="usuario-status">—</span> está ouvindo:
+            </span>
         </div>
 
         <div class="capa-central" id="capa-central">
@@ -44,19 +49,22 @@
         <img id="capa-cheia-overlay" class="capa-cheia-overlay" src="" alt="">
 
         <div class="capa-cheia-info" id="capa-cheia-info">
+            <!-- Status do Last.fm acima do título -->
+            <div class="status-lastfm-cheio">
+                <div class="icone-lastfm-wrapper">
+                    <div class="icone-lastfm-mask"></div>
+                </div>
+                <span id="usuario-status-cheio-container">
+                    <span id="usuario-status-cheio">—</span> <span class="texto-secundario">está ouvindo:</span>
+                </span>
+            </div>
+
             <div class="marquee-container" id="marquee-musica">
                 <span class="marquee-conteudo" id="musica-cheio"></span>
             </div>
             <div class="marquee-container" id="marquee-artista">
                 <span class="marquee-conteudo" id="artista-cheio"></span>
             </div>
-        </div>
-
-        <div class="status-lastfm-cheio">
-            <div class="icone-lastfm-wrapper">
-                <img src="/last.svg" alt="Last.fm" class="icone-lastfm">
-            </div>
-            <span id="usuario-status-cheio">—</span>
         </div>
     </div>
 

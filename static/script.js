@@ -185,7 +185,7 @@ bloquearControlesVideo(capaCheiaVideoEl);
 });
 
 // ============================================
-// LOOP CROSSFADE COM DOIS VÍDEOS PRÉ-CARREGADOS
+// LOOP CROSSFADE OTIMIZADO PARA GECKOVIEW
 // ============================================
 function limparLoopCrossfade(videoEl) {
     if (!videoEl || !videoEl._crossfade) return;
@@ -206,6 +206,7 @@ function limparLoopCrossfade(videoEl) {
         cf.clone = null;
     }
 
+    videoEl.loop = true; // Restaura o loop padrão
     videoEl._crossfade = null;
 }
 
@@ -214,6 +215,9 @@ function configurarLoopCrossfade(videoEl, urlOriginal) {
     if (!urlOriginal) return;
 
     limparLoopCrossfade(videoEl);
+
+    // O vídeo original SEMPRE roda em loop nativo (não pausa, evita flicker no Gecko)
+    videoEl.loop = true;
 
     const clone = document.createElement('video');
     clone.autoplay = false;
@@ -231,13 +235,12 @@ function configurarLoopCrossfade(videoEl, urlOriginal) {
     clone.style.height = '100%';
     clone.style.objectFit = 'cover';
     clone.style.borderRadius = 'inherit';
-    clone.style.opacity = '0';
-    clone.style.zIndex = '0';
+    clone.style.opacity = '0'; // Começa invisível
+    clone.style.zIndex = '0'; // Fica atrás do vídeo original (que tem z-index 1)
     clone.style.pointerEvents = 'none';
-    clone.style.transition = 'opacity 0.35s ease';
+    clone.style.transition = 'opacity 0.2s ease'; // Transição rápida
 
     videoEl.parentNode.appendChild(clone);
-    videoEl.style.transition = 'opacity 0.35s ease';
 
     let hlsClone = null;
     if (clone.canPlayType('application/vnd.apple.mpegurl')) {
@@ -257,44 +260,40 @@ function configurarLoopCrossfade(videoEl, urlOriginal) {
         clone.load();
     }
 
-    let ativo = videoEl;
-    let inativo = clone;
     let trocando = false;
 
-    function fazerTroca() {
-        if (trocando) return;
-        trocando = true;
-
-        try {
-            inativo.currentTime = 0;
-        } catch (e) {}
-        inativo.play().catch(() => {});
-
-        inativo.style.opacity = '1';
-        ativo.style.opacity = '0';
-
-        setTimeout(() => {
-            try {
-                ativo.pause();
-                ativo.currentTime = 0;
-            } catch (e) {}
-            ativo.style.opacity = '0';
-
-            const temp = ativo;
-            ativo = inativo;
-            inativo = temp;
-
-            trocando = false;
-        }, 400);
-    }
-
     const intervalo = setInterval(() => {
-        if (!ativo.duration || trocando) return;
-        const restante = ativo.duration - ativo.currentTime;
-        if (restante <= 0.6) {
-            fazerTroca();
+        // Se o vídeo original não tem duração ou já está no meio de uma troca, ignora
+        if (!videoEl.duration || trocando) return;
+        
+        const restante = videoEl.duration - videoEl.currentTime;
+        
+        // Quando faltar 0.5s pro fim, aciona o clone
+        if (restante <= 0.5) {
+            trocando = true;
+
+            // Prepara e inicia o clone
+            try {
+                clone.currentTime = 0;
+            } catch (e) {}
+            clone.play().catch(() => {});
+            
+            // Faz o clone aparecer na frente
+            clone.style.zIndex = '2';
+            clone.style.opacity = '1';
+
+            // Dá 300ms para o clone cobrir a tela, depois esconde ele e volta pro original
+            setTimeout(() => {
+                // Volta o original para trás e esconde o clone
+                clone.style.opacity = '0';
+                
+                setTimeout(() => {
+                    clone.style.zIndex = '0';
+                    trocando = false;
+                }, 200);
+            }, 300);
         }
-    }, 80);
+    }, 50); // Verifica a cada 50ms
 
     videoEl._crossfade = {
         clone,
@@ -318,7 +317,8 @@ function tocarHLS(videoEl, url, onHlsInstance) {
     videoEl.style.opacity = '1';
     bloquearControlesVideo(videoEl);
 
-    videoEl.loop = false;
+    // Força o loop nativo para o GeckoView não piscar
+    videoEl.loop = true;
 
     if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
         videoEl.src = url;
