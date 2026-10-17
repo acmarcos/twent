@@ -36,10 +36,23 @@ def calcular_cor_dominante(url_imagem):
     try:
         with urllib.request.urlopen(url_imagem, timeout=5) as resp:
             img = Image.open(BytesIO(resp.read())).convert('RGB')
-            img = img.resize((80, 80))
+            img = img.resize((100, 100))
+            pixels = list(img.getdata())
+
             baldes = {}
-            for pixel in img.getdata():
+            for pixel in pixels:
                 r, g, b = pixel
+
+                # --- Ignora tons de pele ---
+                # Pele típica: R > G > B, com R bem maior que G e B
+                if r > 95 and g > 40 and b > 20:
+                    max_c = max(r, g, b)
+                    min_c = min(r, g, b)
+                    if (max_c - min_c) > 15 and \
+                       abs(r - g) > 15 and r > g and r > b:
+                        if r - g > 20 and r - b > 30 and g > b:
+                            continue
+
                 chave = (r // 32, g // 32, b // 32)
                 if chave not in baldes:
                     baldes[chave] = {"count": 0, "r": 0, "g": 0, "b": 0}
@@ -47,22 +60,38 @@ def calcular_cor_dominante(url_imagem):
                 baldes[chave]["r"] += r
                 baldes[chave]["g"] += g
                 baldes[chave]["b"] += b
-            ordenados = sorted(baldes.values(), key=lambda x: x["count"], reverse=True)
-            filtrados = []
-            for b in ordenados:
+
+            # Calcula cor média e saturação de cada balde
+            candidatos = []
+            for b in baldes.values():
                 r = b["r"] // b["count"]
                 g = b["g"] // b["count"]
                 bl = b["b"] // b["count"]
+
                 brilho = (r + g + bl) / 3
-                if 25 < brilho < 230:
-                    filtrados.append(b)
-            if len(filtrados) >= 2:
-                alvo = filtrados[1]
-            elif len(filtrados) == 1:
-                alvo = filtrados[0]
-            else:
+                if not (25 < brilho < 230):
+                    continue
+
+                max_c = max(r, g, bl)
+                min_c = min(r, g, bl)
+                saturacao = max_c - min_c
+
+                # Score: frequência + bônus por saturação
+                score = b["count"] * (1 + saturacao / 50)
+
+                candidatos.append({
+                    "r": r, "g": g, "b": bl,
+                    "score": score
+                })
+
+            if not candidatos:
                 return {"r": 40, "g": 40, "b": 40}
-            return {"r": alvo["r"] // alvo["count"], "g": alvo["g"] // alvo["count"], "b": alvo["b"] // alvo["count"]}
+
+            candidatos.sort(key=lambda x: x["score"], reverse=True)
+            alvo = candidatos[0]
+
+            return {"r": alvo["r"], "g": alvo["g"], "b": alvo["b"]}
+
     except Exception:
         return {"r": 40, "g": 40, "b": 40}
 
@@ -238,7 +267,6 @@ def servir_font(nome):
 
 @app.route('/api/capas-alternativas')
 def capas_alternativas():
-    """Retorna todas as capas (estáticas e animadas) encontradas para uma música."""
     artist = request.args.get('artist', '')
     track = request.args.get('track', '')
     if not artist or not track:
@@ -259,7 +287,8 @@ def capas_alternativas():
             "term": f"{artist} {track}",
             "media": "music",
             "entity": "album",
-            "limit": 20
+            "limit": 50,
+            "country": "US"
         }
         resp = requests.get(itunes_url, params=params, timeout=10)
         data = resp.json()
@@ -279,7 +308,6 @@ def capas_alternativas():
                 continue
             vistos.add(chave_art)
 
-            # Verifica se tem capa animada no aritra
             video_url = None
             if apple_url:
                 try:
@@ -313,7 +341,6 @@ def capas_alternativas():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-    # Ordena: animadas primeiro
     resultados.sort(key=lambda x: (not x["tem_animada"], x["album"]))
 
     cache_capas_alternativas[chave_cache] = {
