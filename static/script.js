@@ -344,66 +344,10 @@ function iniciarAtualizacaoAutomatica(user) {
 }
 
 // ============================================
-// LÓGICA DO ASSISTENTE
-// ============================================
-let timeoutOcultar = null;
-
-function mostrarAssistente() {
-    assistiveEl.classList.add('ativo');
-    if (timeoutOcultar) {
-        clearTimeout(timeoutOcultar);
-        timeoutOcultar = null;
-    }
-}
-
-function esconderAssistente() {
-    timeoutOcultar = setTimeout(() => {
-        assistiveEl.classList.remove('ativo');
-    }, 1500);
-}
-
-document.addEventListener('touchstart', (e) => {
-    if (!modalPesquisa.classList.contains('ativo')) {
-        mostrarAssistente();
-    }
-}, { passive: true });
-
-document.addEventListener('touchend', () => {
-    if (!modalPesquisa.classList.contains('ativo')) {
-        esconderAssistente();
-    }
-});
-
-document.addEventListener('mousedown', (e) => {
-    if (!modalPesquisa.classList.contains('ativo')) {
-        mostrarAssistente();
-    }
-});
-
-document.addEventListener('mouseup', () => {
-    if (!modalPesquisa.classList.contains('ativo')) {
-        esconderAssistente();
-    }
-});
-
-assistiveEl.addEventListener('touchstart', (e) => {
-    e.stopPropagation();
-    mostrarAssistente();
-}, { passive: true });
-assistiveEl.addEventListener('touchend', (e) => {
-    e.stopPropagation();
-    esconderAssistente();
-}, { passive: true });
-
-assistiveEl.addEventListener('mouseenter', mostrarAssistente);
-assistiveEl.addEventListener('mouseleave', esconderAssistente);
-
-// ============================================
-// EVENTOS DOS BOTÕES E FECHAR AO CLICAR FORA
+// EVENTOS DOS BOTÕES
 // ============================================
 opcaoPesquisar.addEventListener('click', (e) => {
     e.stopPropagation();
-    // Abre o modal no centro da tela
     modalPesquisa.classList.add('ativo');
     inputBusca.focus();
 });
@@ -441,7 +385,6 @@ inputBusca.addEventListener('keydown', (e) => {
 
 // FECHA O MODAL AO CLICAR FORA DA CAIXINHA DE VIDRO
 modalPesquisa.addEventListener('click', (e) => {
-    // Se o clique for no fundo escuro (no próprio modalPesquisa) e não na caixinha de vidro
     if (e.target === modalPesquisa) {
         modalPesquisa.classList.remove('ativo');
     }
