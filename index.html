@@ -8,15 +8,15 @@
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <!-- Fundo base colorido (recebe a cor do backend) -->
+    <!-- Fundo base colorido -->
     <div class="tela" id="tela"></div>
 
-    <!-- O OVERLAY: Imagem desfocada que cobre a tela toda -->
+    <!-- O OVERLAY: Imagem desfocada -->
     <img id="capa-img" src="" alt="">
 
     <!-- VISUAL PADRÃO -->
     <div class="painel" id="painel">
-        <!-- Capa Nítida no Topo (Proporção 3:4) -->
+        <!-- Capa Nítida (3:4) -->
         <div class="capa-central" id="capa-central">
             <video id="capa-principal-video" autoplay muted playsinline disablepictureinpicture controlslist="nodownload nofullscreen noremoteplayback noplaybackrate" style="display:none;"></video>
             <img id="capa-principal-img" src="" alt="">
@@ -40,17 +40,18 @@
         </div>
     </div>
 
-    <!-- ASSISTENTE (BARRINHA NO RODAPÉ) -->
+    <!-- ASSISTENTE (FROSTED GLASS) -->
     <div class="assistive" id="assistive">
-        <div class="assistive-menu" id="assistive-menu">
-            <button class="assistive-opcao" id="opcao-pesquisar" aria-label="Pesquisar usuário">
-                <i class="fa-solid fa-magnifying-glass"></i>
-            </button>
-            <button class="assistive-opcao" id="opcao-ultimo" aria-label="Pesquisar último usuário">
-                <i class="fa-solid fa-clock-rotate-left"></i>
-            </button>
+        <div class="assistive-painel">
+            <div class="assistive-menu" id="assistive-menu">
+                <button class="assistive-opcao" id="opcao-pesquisar" aria-label="Pesquisar usuário">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+                <button class="assistive-opcao" id="opcao-ultimo" aria-label="Pesquisar último usuário">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                </button>
+            </div>
         </div>
-        <div class="assistive-bar" id="assistive-bar"></div>
     </div>
 
     <!-- MODAL DE PESQUISA -->

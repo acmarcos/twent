@@ -345,7 +345,7 @@ function iniciarAtualizacaoAutomatica(user) {
 }
 
 // ============================================
-// LÓGICA DO ASSISTENTE
+// LÓGICA DO ASSISTENTE (MAIS TEMPO NA TELA)
 // ============================================
 let timeoutOcultar = null;
 
@@ -360,7 +360,7 @@ function mostrarAssistente() {
 function esconderAssistente() {
     timeoutOcultar = setTimeout(() => {
         assistiveEl.classList.remove('ativo');
-    }, 300);
+    }, 1500);
 }
 
 document.addEventListener('touchstart', (e) => {

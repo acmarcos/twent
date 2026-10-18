@@ -134,7 +134,7 @@ body {
 }
 
 /* ============================================ */
-/* CAPA NÍTIDA (METADE DE CIMA - PROPORÇÃO 3:4) */
+/* CAPA NÍTIDA */
 /* ============================================ */
 
 .capa-central {
@@ -211,7 +211,7 @@ body {
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    margin-bottom: 0px; 
+    margin-bottom: 3px; 
 }
 
 .icone-lastfm-wrapper {
@@ -219,13 +219,17 @@ body {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    margin-top: 3px; 
+    margin-top: 1px;
+    width: 12px; 
+    height: 12px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
 }
 
 .icone-lastfm-mask {
-    width: 10px; 
-    height: 10px;
-    background: #ffffff; 
+    width: 12px; 
+    height: 12px;
+    background: #ffffff;
     -webkit-mask-image: url('last.svg');
     mask-image: url('last.svg');
     -webkit-mask-size: contain;
@@ -235,6 +239,7 @@ body {
     -webkit-mask-position: center;
     mask-position: center;
     display: block;
+    filter: drop-shadow(0px 0px 1px rgba(0, 0, 0, 0.3)); 
 }
 
 .texto-lastfm {
@@ -266,7 +271,6 @@ body {
     width: 100%;
 }
 
-/* AUMENTADO DE 2PX PARA 3PX */
 .info-musica h1 {
     font-family: 'MinhaFonteHeavy', system-ui, sans-serif;
     font-size: var(--titulo-tamanho);
@@ -284,7 +288,6 @@ body {
     mask-image: linear-gradient(to right, #000 90%, transparent 100%);
 }
 
-/* AUMENTADO DE 2PX PARA 3PX */
 .info-musica #artista {
     font-family: 'MinhaFonteRegular', system-ui, sans-serif;
     font-size: var(--artista-tamanho);
@@ -302,21 +305,21 @@ body {
 }
 
 /* ============================================ */
-/* ASSISTENTE (BARRINHA NO RODAPÉ) */
+/* ASSISTENTE (BOTÕES CENTRALIZADOS NAS METADES) */
 /* ============================================ */
 
 .assistive {
     position: fixed;
-    bottom: 1.5rem;
+    bottom: 2rem;
     left: 50%;
     transform: translateX(-50%);
     z-index: 50;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 1rem;
+    justify-content: center;
     user-select: none;
     touch-action: none;
+    
     opacity: 0;
     transition: opacity 0.3s ease;
     pointer-events: none;
@@ -327,52 +330,72 @@ body {
     pointer-events: auto;
 }
 
-.assistive-bar {
-    width: 140px;
-    height: 5px;
-    background: rgba(255, 255, 255, 0.8);
-    border-radius: 10px;
-    transition: background 0.2s, transform 0.2s;
+/* O container de vidro fosco */
+.assistive-painel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    background: rgba(255, 255, 255, 0.15); 
+    backdrop-filter: blur(16px) saturate(1.5); 
+    -webkit-backdrop-filter: blur(16px) saturate(1.5);
+    
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    
+    border-radius: 25px;
+    
+    /* Tamanho horizontal reduzido */
+    width: 150px; 
+    height: 44px;
+    
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    position: relative;
 }
 
 .assistive-menu {
     display: flex;
-    gap: 0.6rem;
-    opacity: 0;
-    transform: translateY(10px);
-    transition: opacity 0.3s ease, transform 0.3s ease;
-    pointer-events: none;
+    flex-direction: row; 
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
 }
 
-.assistive.ativo .assistive-menu {
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: auto;
-}
-
+/* Botões sem fundo */
 .assistive-opcao {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(24px) saturate(1.5);
-    -webkit-backdrop-filter: blur(24px) saturate(1.5);
+    flex: 1; 
+    height: 100%;
+    border: none;
+    background: transparent; 
     color: #fff;
     font-size: 1.1rem;
     cursor: pointer;
     display: flex;
     align-items: center;
-    justify-content: center;
-    transition: background 0.2s, transform 0.1s;
+    justify-content: center; 
+    transition: opacity 0.2s, transform 0.1s;
+    position: relative;
 }
 
 .assistive-opcao:hover {
-    background: rgba(255, 255, 255, 0.25);
+    opacity: 0.7;
 }
 
 .assistive-opcao:active {
-    transform: scale(0.96);
+    transform: scale(0.9);
+}
+
+/* A LINHA DIVISÓRIA VERTICAL PERFEITAMENTE NO CENTRO */
+.assistive-menu::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 1px;
+    height: 16px; 
+    background: rgba(255, 255, 255, 0.2); 
+    pointer-events: none; 
 }
 
 /* ============================================ */
