@@ -100,7 +100,7 @@ body {
     left: 0;
     z-index: 1;
     filter: blur(100px) saturate(2) brightness(0.7);
-    opacity: 0.5;
+    opacity: 0.8;
     transform: scale(1.2);
     transition: opacity 0.8s ease;
     -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.6) 40%, black 100%);
@@ -108,7 +108,7 @@ body {
 }
 
 #capa-img.visivel {
-    opacity: 0.5;
+    opacity: 0.8;
 }
 
 .painel {
@@ -341,10 +341,10 @@ body {
     border-radius: 1px;
 }
 
-/* Caixa de rolagem (Janela) — topo grudado na linha divisória */
+/* Caixa de rolagem (Janela) — mais alta para mais linhas */
 .letra-scroll {
     width: 100%;
-    height: 80px; 
+    height: 170px;
     overflow-y: auto;
     overflow-x: hidden;
     
@@ -356,9 +356,8 @@ body {
     -ms-overflow-style: none;
     padding-top: 0px;
     padding-bottom: 0px;
-    margin-top: -6px;   /* sobe a caixa até a linha divisória */
+    margin-top: -6px;
 
-    /* Fade out no topo E embaixo */
     -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
     mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
 }
@@ -367,20 +366,21 @@ body {
     display: none;
 }
 
+/* Cada linha com espaçamento confortável */
 .linha-letra {
     display: flex;
     align-items: center; 
     justify-content: flex-start;
     width: 100%;
-    height: 100%; 
-    scroll-snap-align: start; 
+    height: 34px;
+    scroll-snap-align: center;
     padding-right: 10px;
 }
 
 .texto-letra {
     font-family: 'MinhaFonteBold', system-ui, sans-serif; 
-    font-size: 12pt; 
-    line-height: 1.4; 
+    font-size: 10pt; 
+    line-height: 1.2; 
     font-weight: 700; 
     color: #ffffff; 
     text-align: left; 
@@ -389,19 +389,24 @@ body {
     word-break: break-word; 
     white-space: pre-wrap;
 
-    transition: opacity 0.4s ease, transform 0.4s ease, color 0.4s ease;
+    transition: opacity 0.4s ease, transform 0.4s ease, color 0.4s ease, font-size 0.4s ease;
 }
 
-/* EFEITO DE FOCO */
+/* Linhas NÃO ativas ficam semi-transparentes e menores */
 .linha-letra .texto-letra {
-    opacity: 0.3;
-    color: rgba(255, 255, 255, 0.5);
+    opacity: 0.35;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 10pt;
+    line-height: 1.2;
     transform: scale(0.95);
 }
 
+/* Linha ativa fica totalmente visível, branca e maior */
 .linha-letra.ativa .texto-letra {
     opacity: 1;
     color: #ffffff;
+    font-size: 12pt;
+    line-height: 1.2;
     transform: scale(1);
 }
 
