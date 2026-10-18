@@ -12,7 +12,6 @@ const opcaoPesquisar = document.getElementById('opcao-pesquisar');
 const opcaoUltimo = document.getElementById('opcao-ultimo');
 
 const modalPesquisa = document.getElementById('modal-pesquisa');
-const modalVoltar = document.getElementById('modal-voltar');
 const inputBusca = document.getElementById('input-busca');
 const btnPesquisarConfirmar = document.getElementById('btn-pesquisar-confirmar');
 
@@ -345,7 +344,7 @@ function iniciarAtualizacaoAutomatica(user) {
 }
 
 // ============================================
-// LÓGICA DO ASSISTENTE (MAIS TEMPO NA TELA)
+// LÓGICA DO ASSISTENTE
 // ============================================
 let timeoutOcultar = null;
 
@@ -360,6 +359,8 @@ function mostrarAssistente() {
 function esconderAssistente() {
     timeoutOcultar = setTimeout(() => {
         assistiveEl.classList.remove('ativo');
+        // Se o usuário parou de interagir, fecha a caixa de pesquisa também
+        modalPesquisa.classList.remove('ativo');
     }, 1500);
 }
 
@@ -404,6 +405,7 @@ assistiveEl.addEventListener('mouseleave', esconderAssistente);
 // ============================================
 opcaoPesquisar.addEventListener('click', (e) => {
     e.stopPropagation();
+    // Abre a caixinha de pesquisa logo acima
     modalPesquisa.classList.add('ativo');
     inputBusca.focus();
 });
@@ -419,7 +421,8 @@ opcaoUltimo.addEventListener('click', (e) => {
     iniciarAtualizacaoAutomatica(ultimo);
 });
 
-btnPesquisarConfirmar.addEventListener('click', () => {
+btnPesquisarConfirmar.addEventListener('click', (e) => {
+    e.stopPropagation();
     const user = inputBusca.value.trim();
     if (!user) return;
     modalPesquisa.classList.remove('ativo');
@@ -436,10 +439,4 @@ inputBusca.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         modalPesquisa.classList.remove('ativo');
     }
-});
-
-modalVoltar.addEventListener('click', (e) => {
-    e.stopPropagation();
-    modalPesquisa.classList.remove('ativo');
-    inputBusca.value = '';
 });

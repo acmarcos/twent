@@ -40,8 +40,20 @@
         </div>
     </div>
 
-    <!-- ASSISTENTE (FROSTED GLASS) -->
+    <!-- ASSISTENTE (PAINEL DEITADO) -->
     <div class="assistive" id="assistive">
+        
+        <!-- MODAL DE PESQUISA (AGORA DENTRO DO PAINEL) -->
+        <div class="modal-pesquisa" id="modal-pesquisa">
+            <div class="modal-conteudo">
+                <input type="text" id="input-busca" placeholder="Usuário do Last.fm" autocomplete="off">
+                <button id="btn-pesquisar-confirmar" aria-label="Confirmar">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- O container de vidro fosco principal -->
         <div class="assistive-painel">
             <div class="assistive-menu" id="assistive-menu">
                 <button class="assistive-opcao" id="opcao-pesquisar" aria-label="Pesquisar usuário">
@@ -50,23 +62,6 @@
                 <button class="assistive-opcao" id="opcao-ultimo" aria-label="Pesquisar último usuário">
                     <i class="fa-solid fa-clock-rotate-left"></i>
                 </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL DE PESQUISA -->
-    <div class="modal-pesquisa" id="modal-pesquisa">
-        <div class="modal-container">
-            <div class="modal-topo">
-                <button class="modal-voltar" id="modal-voltar" aria-label="Voltar">
-                    <i class="fa-solid fa-arrow-left"></i>
-                </button>
-                <div class="modal-conteudo">
-                    <input type="text" id="input-busca" placeholder="Usuário do Last.fm" autocomplete="off">
-                    <button id="btn-pesquisar-confirmar" aria-label="Confirmar">
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </button>
-                </div>
             </div>
         </div>
     </div>
