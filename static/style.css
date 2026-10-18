@@ -246,7 +246,7 @@ body {
     flex: 1;
     min-width: 0;
     font-family: 'MinhaFonteRegular', system-ui, sans-serif;
-    font-size: var(--ouvindo-tamanho);
+    font-size: var(--ouvindo-tamanho); 
     line-height: 1.25; 
     font-weight: 400;
     color: var(--cor-texto-secundario);
@@ -305,7 +305,7 @@ body {
 }
 
 /* ============================================ */
-/* ASSISTENTE E NOVO MODAL DE PESQUISA */
+/* ASSISTENTE (PAINEL DEITADO EMBAIXO) */
 /* ============================================ */
 
 .assistive {
@@ -315,10 +315,10 @@ body {
     transform: translateX(-50%);
     z-index: 50;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 10px; /* Espaço entre a caixa de pesquisa e o painel de baixo */
+    user-select: none;
+    touch-action: none;
     
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -330,13 +330,12 @@ body {
     pointer-events: auto;
 }
 
-/* O container de vidro fosco principal (embaixo) */
 .assistive-painel {
     display: flex;
     align-items: center;
     justify-content: center;
     
-    background: rgba(255, 255, 255, 0.15); 
+    background: rgba(255, 255, 255, 0.25); 
     backdrop-filter: blur(16px) saturate(1.5); 
     -webkit-backdrop-filter: blur(16px) saturate(1.5);
     
@@ -394,26 +393,63 @@ body {
     pointer-events: none; 
 }
 
-/* A NOVA CAIXA DE PESQUISA (ACIMA DO PAINEL) */
+/* ============================================ */
+/* MODAL DE PESQUISA (CORRIGIDO: SEM FUNDO PRETO, SÓ A CAIXINHA DE VIDRO) */
+/* ============================================ */
+
 .modal-pesquisa {
-    display: none; /* Escondida por padrão */
-    width: 150px;
-    height: 40px;
-    background: rgba(255, 255, 255, 0.15); 
-    backdrop-filter: blur(16px) saturate(1.5); 
-    -webkit-backdrop-filter: blur(16px) saturate(1.5);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 25px;
-    padding: 0 10px;
-    align-items: center;
-    justify-content: space-between;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 60;
+    display: none;
+    justify-content: center;
+    align-items: center; 
+    
+    /* Removi o fundo preto. O fundo do modal agora é totalmente transparente para o blur pegar a cor real */
+    background: transparent; 
 }
 
 .modal-pesquisa.ativo {
     display: flex;
 }
 
-/* O input com fonte 8pt e sem fundo */
+/* O fundo escuro vai apenas atrás da caixinha, mas com blend-mode para não escurecer o vidro */
+.modal-pesquisa::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.2); /* Escurece bem de leve o fundo todo */
+    backdrop-filter: blur(5px); /* Um desfoque leve no fundo todo */
+    -webkit-backdrop-filter: blur(5px);
+    z-index: -1;
+}
+
+.modal-container {
+    width: 280px; 
+    height: 44px; 
+    
+    /* O SEGREDO: O vidro mais claro com blur para pegar a cor do fundo */
+    background: rgba(255, 255, 255, 0.25); 
+    backdrop-filter: blur(16px) saturate(1.5); 
+    -webkit-backdrop-filter: blur(16px) saturate(1.5);
+    
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 25px; 
+    
+    padding: 0 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .modal-conteudo {
     display: flex;
     align-items: center;
@@ -429,7 +465,7 @@ body {
     outline: none;
     color: #fff;
     font-family: 'MinhaFonteRegular', system-ui, sans-serif;
-    font-size: 8pt; /* Fonte 8pt conforme pedido */
+    font-size: 8pt; 
     padding: 0;
 }
 
@@ -437,7 +473,6 @@ body {
     color: rgba(255, 255, 255, 0.5);
 }
 
-/* O botão de pesquisar apenas com o ícone, sem fundo */
 .modal-conteudo button {
     background: transparent;
     border: none;
@@ -455,7 +490,16 @@ body {
     opacity: 0.7;
 }
 
-/* Removemos o botão de voltar antigo que não é mais usado */
-.modal-voltar {
-    display: none;
+/* ============================================ */
+/* RESPONSIVO */
+/* ============================================ */
+
+@media (max-width: 420px) {
+    .modal-container {
+        width: 260px; 
+    }
+    
+    .modal-conteudo input {
+        font-size: 8pt;
+    }
 }

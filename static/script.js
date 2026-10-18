@@ -359,8 +359,6 @@ function mostrarAssistente() {
 function esconderAssistente() {
     timeoutOcultar = setTimeout(() => {
         assistiveEl.classList.remove('ativo');
-        // Se o usuário parou de interagir, fecha a caixa de pesquisa também
-        modalPesquisa.classList.remove('ativo');
     }, 1500);
 }
 
@@ -401,11 +399,11 @@ assistiveEl.addEventListener('mouseenter', mostrarAssistente);
 assistiveEl.addEventListener('mouseleave', esconderAssistente);
 
 // ============================================
-// EVENTOS DOS BOTÕES
+// EVENTOS DOS BOTÕES E FECHAR AO CLICAR FORA
 // ============================================
 opcaoPesquisar.addEventListener('click', (e) => {
     e.stopPropagation();
-    // Abre a caixinha de pesquisa logo acima
+    // Abre o modal no centro da tela
     modalPesquisa.classList.add('ativo');
     inputBusca.focus();
 });
@@ -437,6 +435,14 @@ inputBusca.addEventListener('keydown', (e) => {
         iniciarAtualizacaoAutomatica(user);
     }
     if (e.key === 'Escape') {
+        modalPesquisa.classList.remove('ativo');
+    }
+});
+
+// FECHA O MODAL AO CLICAR FORA DA CAIXINHA DE VIDRO
+modalPesquisa.addEventListener('click', (e) => {
+    // Se o clique for no fundo escuro (no próprio modalPesquisa) e não na caixinha de vidro
+    if (e.target === modalPesquisa) {
         modalPesquisa.classList.remove('ativo');
     }
 });
