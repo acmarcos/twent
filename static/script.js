@@ -9,15 +9,12 @@ const telaEl = document.getElementById('tela');
 
 const assistiveEl = document.getElementById('assistive');
 const opcaoPesquisar = document.getElementById('opcao-pesquisar');
-const opcaoLetras = document.getElementById('opcao-letras');
 const opcaoUltimo = document.getElementById('opcao-ultimo');
+// Removidas as variáveis da letra e do botão de letras
 
 const modalPesquisa = document.getElementById('modal-pesquisa');
 const inputBusca = document.getElementById('input-busca');
 const btnPesquisarConfirmar = document.getElementById('btn-pesquisar-confirmar');
-
-const letrasContainer = document.getElementById('letras-container');
-const letraScrollEl = document.getElementById('letra-scroll');
 
 const IS_LOCAL = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
 const SERVER_URL = IS_LOCAL ? 'http://127.0.0.1:5000' : window.location.origin;
@@ -28,9 +25,6 @@ let ultimaMusica = null;
 let ultimaAtualizacao = 0;
 let usuarioAtual = null;
 let hlsInstance = null;
-
-let letrasAtivadas = false;
-let musicaAtualAssinatura = ''; 
 
 function calcularLuminancia(r, g, b) {
     const canais = [r, g, b].map(v => {
@@ -175,84 +169,6 @@ function tocarCapaPadrao(staticUrl, videoUrl) {
 }
 
 // ============================================
-// BUSCAR LETRA (ESTÁTICA)
-// ============================================
-async function buscarLetraEstatica(artist, track, album) {
-    if (!letraScrollEl) return;
-    letraScrollEl.innerHTML = '<div class="linha-letra"><span class="texto-letra">Buscando letra...</span></div>';
-    
-    try {
-        const url = `https://lrclib.net/api/get?artist_name=${encodeURIComponent(artist)}&track_name=${encodeURIComponent(track)}&album_name=${encodeURIComponent(album || '')}`;
-        const resp = await fetch(url);
-        const data = await resp.json();
-        
-        let letraCompleta = '';
-        if (data.plainLyrics) {
-            letraCompleta = data.plainLyrics;
-        } else if (data.syncedLyrics) {
-            letraCompleta = data.syncedLyrics.replace(/\[\d+:\d+\.\d+\]/g, '').trim();
-        }
-
-        if (letraCompleta) {
-            letraScrollEl.innerHTML = ''; 
-            const linhas = letraCompleta.split('\n');
-            
-            linhas.forEach(linha => {
-                if (linha.trim()) {
-                    const div = document.createElement('div');
-                    div.className = 'linha-letra';
-                    const textoSpan = document.createElement('span');
-                    textoSpan.className = 'texto-letra';
-                    textoSpan.innerHTML = linha.trim().replace(/\n/g, '<br>'); 
-                    div.appendChild(textoSpan);
-                    letraScrollEl.appendChild(div);
-                }
-            });
-            atualizarLinhaAtiva();
-        } else {
-            letraScrollEl.innerHTML = '<div class="linha-letra"><span class="texto-letra">Letra não encontrada.</span></div>';
-        }
-    } catch (e) {
-        letraScrollEl.innerHTML = '<div class="linha-letra"><span class="texto-letra">Erro ao carregar a letra.</span></div>';
-    }
-}
-
-// ============================================
-// EFEITO DE FOCO (MARCA A LINHA CENTRAL)
-// ============================================
-function atualizarLinhaAtiva() {
-    if (!letraScrollEl) return;
-    const containerRect = letraScrollEl.getBoundingClientRect();
-    const centroY = containerRect.top + containerRect.height / 2;
-    
-    const linhas = letraScrollEl.querySelectorAll('.linha-letra');
-    let linhaMaisProxima = null;
-    let menorDistancia = Infinity;
-    
-    linhas.forEach(linha => {
-        const linhaRect = linha.getBoundingClientRect();
-        const linhaCentro = linhaRect.top + linhaRect.height / 2;
-        const distancia = Math.abs(linhaCentro - centroY);
-        
-        if (distancia < menorDistancia) {
-            menorDistancia = distancia;
-            linhaMaisProxima = linha;
-        }
-    });
-    
-    if (linhaMaisProxima) {
-        linhas.forEach(l => l.classList.remove('ativa'));
-        linhaMaisProxima.classList.add('ativa');
-    }
-}
-
-if (letraScrollEl) {
-    letraScrollEl.addEventListener('scroll', () => {
-        atualizarLinhaAtiva();
-    });
-}
-
-// ============================================
 // LAST.FM
 // ============================================
 async function carregarLastFm(userEspecifico = null, forcar = false) {
@@ -273,15 +189,6 @@ async function carregarLastFm(userEspecifico = null, forcar = false) {
         const passouTempo = agora - ultimaAtualizacao > 30000;
 
         if (assinaturaAtual === ultimaMusica && !passouTempo && !forcar) return;
-
-        // Se mudou a música
-        if (assinaturaAtual !== musicaAtualAssinatura) {
-            musicaAtualAssinatura = assinaturaAtual;
-            
-            if (letrasAtivadas) {
-                await buscarLetraEstatica(data.artist, data.track, data.album);
-            }
-        }
 
         ultimaMusica = assinaturaAtual;
         ultimaAtualizacao = agora;
@@ -330,23 +237,6 @@ if (opcaoPesquisar) {
         e.stopPropagation();
         modalPesquisa.classList.add('ativo');
         inputBusca.focus();
-    });
-}
-
-if (opcaoLetras) {
-    opcaoLetras.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        letrasAtivadas = !letrasAtivadas;
-        
-        if (letrasAtivadas) {
-            letrasContainer.style.display = 'flex';
-            if (musicaAtualAssinatura) {
-                const [artist, track, album] = musicaAtualAssinatura.split('::');
-                await buscarLetraEstatica(artist, track, album);
-            }
-        } else {
-            letrasContainer.style.display = 'none';
-        }
     });
 }
 

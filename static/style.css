@@ -50,8 +50,10 @@
     --titulo-tamanho: 16pt;
     --artista-tamanho: 10pt;
     --ouvindo-tamanho: 9pt;
-    --cor-texto: #fff;
-    --cor-texto-secundario: rgba(255, 255, 255, 0.85);
+    /* Cores ajustadas para o efeito de vidro */
+    --cor-texto: #e0e0e0; 
+    --cor-texto-secundario: #d0d0d0;
+    --contorno-vidro: rgba(255, 255, 255, 0.8);
 }
 
 * {
@@ -99,7 +101,8 @@ body {
     top: 0;
     left: 0;
     z-index: 1;
-    filter: blur(100px) saturate(2) brightness(0.7);
+    /* Clareei o brightness de 0.7 para 0.9 para o fundo de vidro aparecer melhor */
+    filter: blur(100px) saturate(2) brightness(0.9); 
     opacity: 0.8;
     transform: scale(1.2);
     transition: opacity 0.8s ease;
@@ -180,12 +183,12 @@ body {
     pointer-events: none !important;
 }
 
-/* Container que subiu de 52vh para 49vh */
 .info-musica-container {
     width: 100%;
     position: absolute;
     top: 49vh; 
     left: 0;
+    bottom: calc(2rem + 44px + 10px);
     padding: 0 1.5rem;
     display: flex;
     flex-direction: column;
@@ -201,7 +204,6 @@ body {
     margin-bottom: 6px; 
 }
 
-/* Ícone do Last.fm SEM FUNDO (só SVG branco) */
 .icone-lastfm-wrapper {
     display: inline-flex;
     align-items: center;
@@ -236,6 +238,7 @@ body {
     line-height: 1.25; 
     font-weight: 400;
     color: var(--cor-texto-secundario);
+    text-shadow: 0px 0px 1px var(--contorno-vidro), 0px 0px 2px var(--contorno-vidro); /* Efeito contorno */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -260,19 +263,21 @@ body {
 .info-musica h1 {
     font-family: 'MinhaFonteHeavy', system-ui, sans-serif;
     font-size: var(--titulo-tamanho);
-    line-height: 1.25; 
+    line-height: 1.2; 
     margin-top: 0px; 
     margin-bottom: 3px; 
     font-weight: 900;
     letter-spacing: -0.02em;
-    color: #fff;
+    color: var(--cor-texto);
+    text-shadow: 0px 0px 2px var(--contorno-vidro), 0px 0px 4px rgba(255,255,255,0.5); /* Efeito contorno */
     width: 100%;
-    max-width: 100%;
-    text-align: left;
-    white-space: nowrap;
-    overflow: hidden;
-    -webkit-mask-image: linear-gradient(to right, #000 90%, transparent 100%);
-    mask-image: linear-gradient(to right, #000 90%, transparent 100%);
+    
+    /* MUDANÇA AQUI: Quebra de linha automática para títulos grandes */
+    white-space: normal; 
+    word-break: break-word; 
+    overflow: visible; 
+    -webkit-mask-image: none;
+    mask-image: none;
 }
 
 .info-musica #artista {
@@ -282,7 +287,8 @@ body {
     margin-top: 0px; 
     margin-bottom: 0px; 
     font-weight: 400;
-    color: rgba(255, 255, 255, 0.75);
+    color: var(--cor-texto-secundario);
+    text-shadow: 0px 0px 1px var(--contorno-vidro), 0px 0px 2px var(--contorno-vidro); /* Efeito contorno */
     width: 100%;
     max-width: 100%;
     text-align: left;
@@ -290,124 +296,6 @@ body {
     overflow: hidden;
     -webkit-mask-image: linear-gradient(to right, #000 90%, transparent 100%);
     mask-image: linear-gradient(to right, #000 90%, transparent 100%);
-}
-
-/* ============================================ */
-/* LETRAS ESTÁTICAS E SÍMBOLO DE MÚSICA */
-/* ============================================ */
-
-.letras-container {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start; 
-    position: relative;
-    margin-bottom: 1rem;
-}
-
-/* Linha horizontal: ícone + linha divisória centralizados */
-.letra-separador {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    width: 100%;
-    margin-top: 14px; 
-    margin-bottom: 0px;
-    flex-shrink: 0;
-    gap: 8px;
-}
-
-/* Ícone de música SEM FUNDO (só ícone branco) */
-.icone-musica-wrapper {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    width: 12px; 
-    height: 12px;
-}
-
-.icone-musica {
-    color: #ffffff; 
-    font-size: 9px;
-    line-height: 1;
-}
-
-/* Linha divisória fina e suave ao lado do ícone */
-.linha-divisoria {
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(to right, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0));
-    border-radius: 1px;
-}
-
-/* Caixa de rolagem (Janela) — mais alta para mais linhas */
-.letra-scroll {
-    width: 100%;
-    height: 170px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    
-    scroll-snap-type: y mandatory;
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
-    
-    scrollbar-width: none; 
-    -ms-overflow-style: none;
-    padding-top: 0px;
-    padding-bottom: 0px;
-    margin-top: -6px;
-
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
-    mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
-}
-
-.letra-scroll::-webkit-scrollbar {
-    display: none;
-}
-
-/* Cada linha com espaçamento confortável */
-.linha-letra {
-    display: flex;
-    align-items: center; 
-    justify-content: flex-start;
-    width: 100%;
-    height: 34px;
-    scroll-snap-align: center;
-    padding-right: 10px;
-}
-
-.texto-letra {
-    font-family: 'MinhaFonteBold', system-ui, sans-serif; 
-    font-size: 10pt; 
-    line-height: 1.2; 
-    font-weight: 700; 
-    color: #ffffff; 
-    text-align: left; 
-    
-    max-width: 100%; 
-    word-break: break-word; 
-    white-space: pre-wrap;
-
-    transition: opacity 0.4s ease, transform 0.4s ease, color 0.4s ease, font-size 0.4s ease;
-}
-
-/* Linhas NÃO ativas ficam semi-transparentes e menores */
-.linha-letra .texto-letra {
-    opacity: 0.35;
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 10pt;
-    line-height: 1.2;
-    transform: scale(0.95);
-}
-
-/* Linha ativa fica totalmente visível, branca e maior */
-.linha-letra.ativa .texto-letra {
-    opacity: 1;
-    color: #ffffff;
-    font-size: 12pt;
-    line-height: 1.2;
-    transform: scale(1);
 }
 
 /* ============================================ */
@@ -432,16 +320,18 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.25); 
+    background: rgba(255, 255, 255, 0.15); /* Vidro um pouco mais transparente */
     backdrop-filter: blur(16px) saturate(1.5); 
     -webkit-backdrop-filter: blur(16px) saturate(1.5);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 25px;
-    width: 180px; 
+    width: 180px; /* Como tiramos 1 botão, vamos ajustar a largura no menu */
     height: 44px;
     position: relative;
+    transition: width 0.3s ease;
 }
 
+/* Ajuste para 2 botões ficarem centralizados */
 .assistive-menu {
     display: flex;
     flex-direction: row; 
@@ -456,7 +346,8 @@ body {
     height: 100%;
     border: none;
     background: transparent; 
-    color: #fff;
+    color: var(--cor-texto);
+    text-shadow: 0px 0px 1px var(--contorno-vidro);
     font-size: 1.1rem;
     cursor: pointer;
     display: flex;
@@ -511,10 +402,10 @@ body {
 .modal-container {
     width: 280px; 
     height: 44px; 
-    background: rgba(255, 255, 255, 0.25); 
+    background: rgba(255, 255, 255, 0.15); 
     backdrop-filter: blur(16px) saturate(1.5); 
     -webkit-backdrop-filter: blur(16px) saturate(1.5);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 25px; 
     padding: 0 16px;
     display: flex;
@@ -535,21 +426,22 @@ body {
     background: transparent;
     border: none;
     outline: none;
-    color: #fff;
+    color: var(--cor-texto);
     font-family: 'MinhaFonteRegular', system-ui, sans-serif;
     font-size: 9pt; 
     padding: 0;
 }
 
 .modal-conteudo input::placeholder {
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.6);
     font-size: 9pt;
 }
 
 .modal-conteudo button {
     background: transparent;
     border: none;
-    color: #fff;
+    color: var(--cor-texto);
+    text-shadow: 0px 0px 1px var(--contorno-vidro);
     font-size: 0.9rem;
     cursor: pointer;
     display: flex;
