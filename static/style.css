@@ -50,10 +50,8 @@
     --titulo-tamanho: 16pt;
     --artista-tamanho: 10pt;
     --ouvindo-tamanho: 9pt;
-    /* Cores ajustadas para o efeito de vidro */
-    --cor-texto: #e0e0e0; 
-    --cor-texto-secundario: #d0d0d0;
-    --contorno-vidro: rgba(255, 255, 255, 0.8);
+    --cor-texto: #fff;
+    --cor-texto-secundario: rgba(255, 255, 255, 0.85);
 }
 
 * {
@@ -101,8 +99,7 @@ body {
     top: 0;
     left: 0;
     z-index: 1;
-    /* Clareei o brightness de 0.7 para 0.9 para o fundo de vidro aparecer melhor */
-    filter: blur(100px) saturate(2) brightness(0.9); 
+    filter: blur(100px) saturate(2) brightness(0.7);
     opacity: 0.8;
     transform: scale(1.2);
     transition: opacity 0.8s ease;
@@ -238,7 +235,6 @@ body {
     line-height: 1.25; 
     font-weight: 400;
     color: var(--cor-texto-secundario);
-    text-shadow: 0px 0px 1px var(--contorno-vidro), 0px 0px 2px var(--contorno-vidro); /* Efeito contorno */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -260,6 +256,7 @@ body {
     width: 100%;
 }
 
+/* TÍTULO DA MÚSICA NORMAL, BRANCO E COM QUEBRA DE LINHA */
 .info-musica h1 {
     font-family: 'MinhaFonteHeavy', system-ui, sans-serif;
     font-size: var(--titulo-tamanho);
@@ -268,11 +265,12 @@ body {
     margin-bottom: 3px; 
     font-weight: 900;
     letter-spacing: -0.02em;
-    color: var(--cor-texto);
-    text-shadow: 0px 0px 2px var(--contorno-vidro), 0px 0px 4px rgba(255,255,255,0.5); /* Efeito contorno */
+    color: #fff;
     width: 100%;
+    max-width: 100%;
+    text-align: left;
     
-    /* MUDANÇA AQUI: Quebra de linha automática para títulos grandes */
+    /* Quebra de linha para títulos grandes */
     white-space: normal; 
     word-break: break-word; 
     overflow: visible; 
@@ -287,8 +285,7 @@ body {
     margin-top: 0px; 
     margin-bottom: 0px; 
     font-weight: 400;
-    color: var(--cor-texto-secundario);
-    text-shadow: 0px 0px 1px var(--contorno-vidro), 0px 0px 2px var(--contorno-vidro); /* Efeito contorno */
+    color: rgba(255, 255, 255, 0.75);
     width: 100%;
     max-width: 100%;
     text-align: left;
@@ -320,18 +317,16 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.15); /* Vidro um pouco mais transparente */
+    background: rgba(255, 255, 255, 0.25); 
     backdrop-filter: blur(16px) saturate(1.5); 
     -webkit-backdrop-filter: blur(16px) saturate(1.5);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 25px;
-    width: 180px; /* Como tiramos 1 botão, vamos ajustar a largura no menu */
+    width: 140px; 
     height: 44px;
     position: relative;
-    transition: width 0.3s ease;
 }
 
-/* Ajuste para 2 botões ficarem centralizados */
 .assistive-menu {
     display: flex;
     flex-direction: row; 
@@ -346,8 +341,7 @@ body {
     height: 100%;
     border: none;
     background: transparent; 
-    color: var(--cor-texto);
-    text-shadow: 0px 0px 1px var(--contorno-vidro);
+    color: #fff;
     font-size: 1.1rem;
     cursor: pointer;
     display: flex;
@@ -402,10 +396,10 @@ body {
 .modal-container {
     width: 280px; 
     height: 44px; 
-    background: rgba(255, 255, 255, 0.15); 
+    background: rgba(255, 255, 255, 0.25); 
     backdrop-filter: blur(16px) saturate(1.5); 
     -webkit-backdrop-filter: blur(16px) saturate(1.5);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 25px; 
     padding: 0 16px;
     display: flex;
@@ -426,22 +420,21 @@ body {
     background: transparent;
     border: none;
     outline: none;
-    color: var(--cor-texto);
+    color: #fff;
     font-family: 'MinhaFonteRegular', system-ui, sans-serif;
     font-size: 9pt; 
     padding: 0;
 }
 
 .modal-conteudo input::placeholder {
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(255, 255, 255, 0.5);
     font-size: 9pt;
 }
 
 .modal-conteudo button {
     background: transparent;
     border: none;
-    color: var(--cor-texto);
-    text-shadow: 0px 0px 1px var(--contorno-vidro);
+    color: #fff;
     font-size: 0.9rem;
     cursor: pointer;
     display: flex;
