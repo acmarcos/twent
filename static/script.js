@@ -7,11 +7,13 @@ const musicaEl = document.getElementById('musica');
 const artistaEl = document.getElementById('artista');
 const telaEl = document.getElementById('tela');
 
-const assistiveEl = document.getElementById('assistive');
+// Elementos novos
+const fotoUsuarioEl = document.getElementById('foto-usuario');
+const scrobblesContainer = document.getElementById('scrobbles-container');
+const totalScrobblesEl = document.getElementById('total-scrobbles');
+
 const opcaoPesquisar = document.getElementById('opcao-pesquisar');
 const opcaoUltimo = document.getElementById('opcao-ultimo');
-// Removidas as variáveis da letra e do botão de letras
-
 const modalPesquisa = document.getElementById('modal-pesquisa');
 const inputBusca = document.getElementById('input-busca');
 const btnPesquisarConfirmar = document.getElementById('btn-pesquisar-confirmar');
@@ -197,6 +199,22 @@ async function carregarLastFm(userEspecifico = null, forcar = false) {
         usuarioStatusEl.textContent = user;
         musicaEl.textContent = data.track;
         artistaEl.textContent = data.artist;
+
+        // Lógica da Foto do Usuário
+        if (data.user_image) {
+            fotoUsuarioEl.src = data.user_image;
+            fotoUsuarioEl.style.display = 'block';
+        } else {
+            fotoUsuarioEl.style.display = 'none';
+        }
+
+        // Lógica dos Scrobbles
+        if (data.scrobbles !== undefined && data.scrobbles !== null) {
+            totalScrobblesEl.textContent = `${data.scrobbles.toLocaleString('pt-BR')} scrobbles`;
+            scrobblesContainer.style.display = 'flex';
+        } else {
+            scrobblesContainer.style.display = 'none';
+        }
 
         if (data.static_url) {
             capaImgEl.src = data.static_url;

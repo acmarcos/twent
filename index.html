@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Twent</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="/style.css">
+    <!-- Caminho do CSS ajustado (sem a barra inicial) -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="tela" id="tela"></div>
@@ -18,21 +19,30 @@
         </div>
 
         <div class="info-musica-container">
+            <!-- Foto do usuário + "está ouvindo:" -->
             <div class="status-lastfm">
-                <div class="icone-lastfm-wrapper">
-                    <div class="icone-lastfm-mask"></div>
+                <div class="foto-usuario-wrapper">
+                    <img id="foto-usuario" src="" alt="" style="display: none;">
                 </div>
                 <span class="texto-lastfm">
                     <span id="usuario-status">—</span> está ouvindo:
                 </span>
             </div>
 
+            <!-- Título e Artista -->
             <div class="info-musica">
                 <h1 id="musica"></h1>
                 <p id="artista"></p>
             </div>
 
-            <!-- Caixa de letras removida daqui -->
+            <!-- Last.fm + Separador + Scrobbles (Abaixo do artista) -->
+            <div class="scrobbles-container" id="scrobbles-container" style="display: none;">
+                <div class="icone-lastfm-wrapper">
+                    <div class="icone-lastfm-mask"></div>
+                </div>
+                <div class="separador-bolinha"></div>
+                <span id="total-scrobbles">0 scrobbles</span>
+            </div>
         </div>
     </div>
 
@@ -45,7 +55,6 @@
                 <button class="assistive-opcao" id="opcao-ultimo" aria-label="Pesquisar último usuário">
                     <i class="fa-solid fa-clock-rotate-left"></i>
                 </button>
-                <!-- Botão de letras removido -->
             </div>
         </div>
     </div>
@@ -62,6 +71,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
-    <script src="/script.js"></script>
+    <!-- Caminho do JS ajustado (sem a barra inicial) -->
+    <script src="script.js"></script>
 </body>
 </html>
