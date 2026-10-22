@@ -292,41 +292,16 @@ body {
     mask-image: linear-gradient(to right, #000 90%, transparent 100%);
 }
 
-/* --- BASE: LAST.FM + SCROBBLES --- */
+/* --- BASE: SCROBBLES --- */
 .scrobbles-container {
     display: flex;
     align-items: center; 
-    gap: 6px;
     margin-top: 8px;
     font-family: 'MinhaFonteBold', system-ui, sans-serif;
     font-size: var(--ouvindo-tamanho);
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(255, 255, 255, 0.4);
     padding-left: 0; 
     height: 14px; 
-}
-
-.icone-lastfm-wrapper {
-    width: 12px; 
-    height: 12px;
-    flex-shrink: 0;
-    background: #ffffff;
-    -webkit-mask-image: url('last.svg');
-    mask-image: url('last.svg');
-    -webkit-mask-size: contain;
-    mask-size: contain;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-    mask-position: center;
-}
-
-.separador-bolinha {
-    width: 3px; 
-    height: 3px; 
-    border-radius: 50%; 
-    background: rgba(255, 255, 255, 0.4);
-    flex-shrink: 0;
-    margin-top: -1px; 
 }
 
 #total-scrobbles {
@@ -337,146 +312,73 @@ body {
     line-height: 1; 
     position: relative;
     top: -1px; 
+    color: rgba(255, 255, 255, 0.4);
 }
 
 /* ============================================ */
-/* RECOMENDAÇÕES COM SWIPE HORIZONTAL */
+/* LETRA SINCRONIZADA (12PT E LINHAS MAIS JUNTAS) */
 /* ============================================ */
 
-.recomendacoes-wrapper {
-    position: fixed;
-    bottom: 20px;
-    left: 0;
+.letra-sincronizada-container {
     width: 100%;
-    padding: 0 1.5rem;
-    z-index: 5;
-    display: flex;
-    flex-direction: column;
-    box-sizing: border-box;
-}
-
-.recomendacoes-titulo {
-    font-family: 'MinhaFonteRegular', system-ui, sans-serif;
-    font-size: 9pt;
-    font-weight: 400;
-    color: rgba(255, 255, 255, 0.9);
-    margin-bottom: 10px;
-    padding-left: 2px;
-}
-
-.recomendacoes-viewport {
-    width: 100%;
-    height: 90px;
+    margin-top: 10px;
+    height: 120px; /* Altura ajustada para 3 linhas mais juntas */
     overflow: hidden;
     position: relative;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
 }
 
-.recomendacoes-track {
-    display: flex;
-    flex-direction: row;
-    height: 100%;
-    transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    will-change: transform;
-}
-
-.card-item {
-    flex: 0 0 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 12px;
-    text-decoration: none;
-    color: inherit;
-    cursor: pointer;
-    opacity: 0.3;
-    transition: opacity 0.35s ease;
-    padding: 0;
-    box-sizing: border-box;
-    overflow: hidden;
-}
-
-.card-item.ativo {
-    opacity: 1;
-}
-
-.card-capa-wrapper {
-    width: 80px;
-    height: 80px;
-    position: relative;
-    border-radius: 20px;
-    overflow: hidden;
-    flex-shrink: 0;
-}
-
-.card-capa-wrapper img {
+.letra-sincronizada-scroll {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    scroll-behavior: smooth;
+    padding: 40px 0; /* Padding reduzido para linhas mais juntas */
+}
+
+.letra-sincronizada-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+/* LINHA NÃO ATIVA - 12PT, QUEBRA DE LINHA E DESFOCADA */
+.linha-sincronizada {
     display: block;
-}
-
-.card-capa-wrapper .overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
     width: 100%;
-    height: 100%;
-    background-image: url('overlay.png');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    pointer-events: none;
-}
-
-.card-info {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
     text-align: left;
-    flex: 1;
-    min-width: 0;
-}
-
-/* FADE OUT NO TÍTULO DA MÚSICA */
-.card-info-titulo {
+    padding: 4px 0; /* Padding reduzido para linhas mais juntas */
     font-family: 'MinhaFonteBold', system-ui, sans-serif;
-    font-size: 10pt;
+    font-size: 12pt;
     font-weight: 700;
     color: #fff;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 100%;
-    display: block;
-    -webkit-mask-image: linear-gradient(to right, black 80%, transparent 100%);
-    mask-image: linear-gradient(to right, black 80%, transparent 100%);
+    line-height: 1.2; /* Line-height reduzido */
+    white-space: normal;      
+    word-break: break-word;   
+    min-height: 40px;         /* Altura mínima reduzida */
+    filter: blur(3px);
+    opacity: 0.5;
+    transition: filter 0.3s ease, opacity 0.3s ease;
 }
 
-/* FADE OUT NO NOME DO ARTISTA */
-.card-info-artista {
-    font-family: 'MinhaFonteRegular', system-ui, sans-serif;
-    font-size: 9pt;
-    font-weight: 400;
-    color: rgba(255, 255, 255, 0.6);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 100%;
-    display: block;
-    margin-top: 2px;
-    -webkit-mask-image: linear-gradient(to right, black 80%, transparent 100%);
-    mask-image: linear-gradient(to right, black 80%, transparent 100%);
+/* LINHA ATIVA - NÍTIDA */
+.linha-sincronizada.ativa {
+    filter: blur(0);
+    opacity: 1;
+    color: #fff;
 }
 
 /* ============================================ */
-/* ASSISTENTE (CANTO SUPERIOR DIREITO) */
+/* PAINEL DE FERRAMENTAS (EMBAIXO) */
 /* ============================================ */
 
 .assistive {
     position: fixed;
-    top: 1.5rem;
-    right: 1.5rem;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 50;
     display: flex;
     align-items: center;
@@ -490,7 +392,7 @@ body {
 .assistive.oculto {
     opacity: 0;
     pointer-events: none;
-    transform: translateY(-20px);
+    transform: translateX(-50%) translateY(20px);
 }
 
 .assistive-painel {
@@ -502,8 +404,8 @@ body {
     -webkit-backdrop-filter: blur(16px) saturate(1.5);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 25px;
-    width: 100px; 
-    height: 40px;
+    width: 260px; 
+    height: 44px;
     position: relative;
 }
 
@@ -537,6 +439,10 @@ body {
 
 .assistive-opcao:active {
     transform: scale(0.9);
+}
+
+.assistive-opcao.favoritado {
+    color: #ffffff;
 }
 
 /* ============================================ */
@@ -626,6 +532,174 @@ body {
 
 .modal-conteudo button:hover {
     opacity: 0.7;
+}
+
+/* ============================================ */
+/* MODAL DE RECOMENDAÇÕES (TELA CHEIA) */
+/* ============================================ */
+
+.modal-recomendacoes {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 55;
+    display: none;
+    justify-content: center;
+    align-items: flex-start;
+    background: transparent;
+}
+
+.modal-recomendacoes.ativo {
+    display: flex;
+}
+
+.modal-recomendacoes-container {
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(25px) saturate(1.5);
+    -webkit-backdrop-filter: blur(25px) saturate(1.5);
+    display: flex;
+    flex-direction: column;
+    padding: 20px 1.5rem;
+    box-sizing: border-box;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-recomendacoes-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    font-family: 'MinhaFonteRegular', system-ui, sans-serif;
+    font-size: 9pt;
+    font-weight: 400;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.modal-recomendacoes-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    flex: 1;
+    padding-bottom: 10px;
+}
+
+.modal-recomendacoes-lista::-webkit-scrollbar {
+    display: none;
+}
+
+.recomendacao-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.recomendacao-item:last-child {
+    border-bottom: none;
+}
+
+.recomendacao-capa {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.recomendacao-capa img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.recomendacao-capa .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('overlay.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    pointer-events: none;
+}
+
+.recomendacao-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: left;
+    flex: 1;
+    min-width: 0;
+}
+
+.recomendacao-titulo {
+    font-family: 'MinhaFonteBold', system-ui, sans-serif;
+    font-size: 10pt;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+.recomendacao-artista {
+    font-family: 'MinhaFonteRegular', system-ui, sans-serif;
+    font-size: 9pt;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.6);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    margin-top: 2px;
+}
+
+.botao-fechar-recomendacoes {
+    display: flex;
+    justify-content: center;
+    margin-top: 15px;
+    flex-shrink: 0;
+}
+
+.botao-fechar-recomendacoes button {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: #fff;
+    font-size: 1.2rem;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.botao-fechar-recomendacoes button:hover {
+    background: rgba(255, 255, 255, 0.4);
 }
 
 @media (max-width: 420px) {

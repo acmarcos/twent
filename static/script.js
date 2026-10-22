@@ -13,18 +13,28 @@ const totalScrobblesEl = document.getElementById('total-scrobbles');
 
 const opcaoPesquisar = document.getElementById('opcao-pesquisar');
 const opcaoUltimo = document.getElementById('opcao-ultimo');
+const opcaoFavoritar = document.getElementById('opcao-favoritar');
+const opcaoPrevia = document.getElementById('opcao-previa');
+const opcaoRecomendacoes = document.getElementById('opcao-recomendacoes');
+
 const modalPesquisa = document.getElementById('modal-pesquisa');
 const inputBusca = document.getElementById('input-busca');
 const btnPesquisarConfirmar = document.getElementById('btn-pesquisar-confirmar');
 
-const recomendacoesWrapper = document.getElementById('recomendacoes-wrapper');
-const recomendacoesViewport = document.getElementById('recomendacoes-viewport');
-const recomendacoesTrack = document.getElementById('recomendacoes-track');
+const modalRecomendacoes = document.getElementById('modal-recomendacoes');
+const modalRecomendacoesLista = document.getElementById('modal-recomendacoes-lista');
+const audioPrevia = document.getElementById('audio-previa');
+const loadingPrevia = document.getElementById('loading-previa');
+
+const letraSincronizadaContainer = document.getElementById('letra-sincronizada-container');
+const letraSincronizadaScroll = document.getElementById('letra-sincronizada-scroll');
+
 const assistiveEl = document.getElementById('assistive');
 
 const IS_LOCAL = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
 const SERVER_URL = IS_LOCAL ? 'http://127.0.0.1:5000' : window.location.origin;
 const STORAGE_KEY = 'twent_ultimo_usuario';
+const FAVORITOS_KEY = 'twent_favoritos';
 
 let intervaloAtualizacao = null;
 let ultimaMusica = null;
@@ -37,11 +47,15 @@ let videoEstaTocando = false;
 let frameCapturado = false;
 let loopTimer = null;
 
-let assistenteVisivel = false;
+let assistenteVisivel = true;
+let musicaAtual = null;
 
-// Variáveis do carrossel
-let indiceAtual = 0;
-let totalCards = 0;
+let previaTocando = false;
+let musicaDaPrevia = null;
+
+let letraSincronizada = [];
+let indiceLetraAtual = -1;
+let intervaloSincronia = null;
 
 function calcularLuminancia(r, g, b) {
     const canais = [r, g, b].map(v => {
@@ -142,92 +156,236 @@ function tocarCapaPadrao(staticUrl, videoUrl) {
     }
 }
 
-// --- FUNÇÃO PARA IR PARA UM CARD ---
-function irParaCard(index) {
-    if (index < 0 || index >= totalCards) return;
-    
-    indiceAtual = index;
-    const offset = -indiceAtual * 100;
-    recomendacoesTrack.style.transform = `translateX(${offset}%)`;
-    
-    const cards = recomendacoesTrack.querySelectorAll('.card-item');
-    cards.forEach((card, i) => {
-        card.classList.toggle('ativo', i === indiceAtual);
-    });
+function carregarFavoritos() {
+    try {
+        return JSON.parse(localStorage.getItem(FAVORITOS_KEY)) || [];
+    } catch { return []; }
 }
 
-// --- SWIPE HORIZONTAL (arrastar para a esquerda = próximo card) ---
-let touchStartX = 0;
-let touchStartY = 0;
-let touchMovendo = false;
-let mouseStartX = 0;
-
-if (recomendacoesViewport) {
-    recomendacoesViewport.addEventListener('touchstart', (e) => {
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
-        touchMovendo = false;
-    }, { passive: true });
-
-    recomendacoesViewport.addEventListener('touchmove', (e) => {
-        if (touchMovendo) return;
-        
-        const deltaX = touchStartX - e.touches[0].clientX;
-        const deltaY = touchStartY - e.touches[0].clientY;
-        
-        if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY)) {
-            touchMovendo = true;
-            
-            if (deltaX > 0) {
-                // Arrastou para a ESQUERDA: próximo card (vem da direita)
-                irParaCard(indiceAtual + 1);
-            } else {
-                // Arrastou para a DIREITA: card anterior (vem da esquerda)
-                irParaCard(indiceAtual - 1);
-            }
-        }
-    }, { passive: true });
-
-    // Suporte para desktop (mouse)
-    recomendacoesViewport.addEventListener('mousedown', (e) => {
-        mouseStartX = e.clientX;
-    });
-
-    recomendacoesViewport.addEventListener('mouseup', (e) => {
-        const deltaX = mouseStartX - e.clientX;
-        if (deltaX > 40) {
-            irParaCard(indiceAtual + 1);
-        } else if (deltaX < -40) {
-            irParaCard(indiceAtual - 1);
-        }
-    });
+function salvarFavoritos(lista) {
+    localStorage.setItem(FAVORITOS_KEY, JSON.stringify(lista));
 }
 
-// --- CARREGAR RECOMENDAÇÕES ---
-async function carregarRecomendacoes(artist) {
-    if (!artist) {
-        recomendacoesWrapper.style.display = 'none';
+function atualizarBotaoFavorito() {
+    if (!musicaAtual || !opcaoFavoritar) return;
+    const favoritos = carregarFavoritos();
+    const chave = `${musicaAtual.artist}::${musicaAtual.track}`;
+    const index = favoritos.indexOf(chave);
+
+    if (index !== -1) {
+        opcaoFavoritar.classList.add('favoritado');
+        opcaoFavoritar.innerHTML = '<i class="fa-solid fa-heart"></i>';
+    } else {
+        opcaoFavoritar.classList.remove('favoritado');
+        opcaoFavoritar.innerHTML = '<i class="fa-regular fa-heart"></i>';
+    }
+}
+
+async function buscarLetraSincronizada(artist, track) {
+    try {
+        const url = `${SERVER_URL}/api/letra-sincronizada?artist=${encodeURIComponent(artist)}&track=${encodeURIComponent(track)}`;
+        const resp = await fetch(url);
+        const data = await resp.json();
+
+        if (data.syncedLyrics) {
+            const linhas = data.syncedLyrics.split('\n');
+            letraSincronizada = [];
+
+            linhas.forEach(linha => {
+                const match = linha.match(/\[(\d+):(\d+)\.(\d+)\](.*)/);
+                if (match) {
+                    const minutos = parseInt(match[1]);
+                    const segundos = parseInt(match[2]);
+                    const centesimos = parseInt(match[3]);
+                    const tempo = minutos * 60 + segundos + centesimos / 100;
+                    const texto = match[4].trim();
+                    if (texto) {
+                        letraSincronizada.push({ tempo, texto });
+                    }
+                }
+            });
+
+            return letraSincronizada.length > 0;
+        }
+    } catch (e) {
+        console.error('Erro ao buscar letra sincronizada:', e);
+    }
+    return false;
+}
+
+function renderizarLetraSincronizada() {
+    if (!letraSincronizadaScroll) return;
+    letraSincronizadaScroll.innerHTML = '';
+
+    if (letraSincronizada.length === 0) {
+        letraSincronizadaScroll.innerHTML = '<div class="linha-sincronizada">Letra não encontrada.</div>';
         return;
     }
 
-    try {
-        const response = await fetch(`${SERVER_URL}/api/recomendacoes?artist=${encodeURIComponent(artist)}`);
-        const data = await response.json();
-        
-        if (data.length > 0) {
-            recomendacoesWrapper.style.display = 'flex';
-            recomendacoesTrack.innerHTML = '';
+    letraSincronizada.forEach((linha, index) => {
+        const div = document.createElement('div');
+        div.className = 'linha-sincronizada';
+        div.id = `linha-sinc-${index}`;
+        div.textContent = linha.texto;
+        letraSincronizadaScroll.appendChild(div);
+    });
+}
 
-            data.forEach((item, index) => {
+function iniciarSincroniaLetra(startTimeOffset = 0) {
+    if (intervaloSincronia) clearInterval(intervaloSincronia);
+    indiceLetraAtual = -1;
+
+    const aguardarAudio = setInterval(() => {
+        if (audioPrevia.readyState >= 2) {
+            clearInterval(aguardarAudio);
+            
+            intervaloSincronia = setInterval(() => {
+                if (!audioPrevia || audioPrevia.paused) return;
+
+                const tempoAtual = audioPrevia.currentTime + startTimeOffset;
+                let novoIndice = -1;
+
+                for (let i = 0; i < letraSincronizada.length; i++) {
+                    if (tempoAtual >= letraSincronizada[i].tempo) {
+                        novoIndice = i;
+                    } else {
+                        break;
+                    }
+                }
+
+                if (novoIndice !== indiceLetraAtual && novoIndice >= 0) {
+                    indiceLetraAtual = novoIndice;
+
+                    const linhas = letraSincronizadaScroll.querySelectorAll('.linha-sincronizada');
+                    linhas.forEach(l => l.classList.remove('ativa'));
+
+                    const linhaAtiva = document.getElementById(`linha-sinc-${novoIndice}`);
+                    if (linhaAtiva) {
+                        linhaAtiva.classList.add('ativa');
+                        linhaAtiva.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            }, 50);
+        }
+    }, 100);
+}
+
+function pararSincroniaLetra() {
+    if (intervaloSincronia) {
+        clearInterval(intervaloSincronia);
+        intervaloSincronia = null;
+    }
+    indiceLetraAtual = -1;
+    if (letraSincronizadaScroll) {
+        const linhas = letraSincronizadaScroll.querySelectorAll('.linha-sincronizada');
+        linhas.forEach(l => l.classList.remove('ativa'));
+    }
+}
+
+async function tocarPrevia() {
+    if (!musicaAtual) return;
+
+    const chaveAtual = `${musicaAtual.artist}::${musicaAtual.track}`;
+
+    if (previaTocando && musicaDaPrevia === chaveAtual) {
+        audioPrevia.pause();
+        audioPrevia.currentTime = 0;
+        previaTocando = false;
+        musicaDaPrevia = null;
+        opcaoPrevia.innerHTML = '<i class="fa-solid fa-play"></i>';
+        pararSincroniaLetra();
+        if (letraSincronizadaContainer) letraSincronizadaContainer.style.display = 'none';
+        return;
+    }
+
+    if (previaTocando) {
+        audioPrevia.pause();
+        audioPrevia.currentTime = 0;
+        previaTocando = false;
+        musicaDaPrevia = null;
+        pararSincroniaLetra();
+    }
+
+    if (loadingPrevia) loadingPrevia.style.display = 'flex';
+
+    try {
+        const url = `${SERVER_URL}/api/audio-completo?artist=${encodeURIComponent(musicaAtual.artist)}&track=${encodeURIComponent(musicaAtual.track)}`;
+        const resp = await fetch(url);
+        const data = await resp.json();
+
+        if (data.audioUrl) {
+            audioPrevia.src = data.audioUrl;
+            audioPrevia.load();
+
+            const temLetra = await buscarLetraSincronizada(musicaAtual.artist, musicaAtual.track);
+
+            if (temLetra) {
+                letraSincronizadaContainer.style.display = 'block';
+                renderizarLetraSincronizada();
+            } else {
+                letraSincronizadaContainer.style.display = 'none';
+            }
+
+            try {
+                await audioPrevia.play();
+                previaTocando = true;
+                musicaDaPrevia = chaveAtual;
+                opcaoPrevia.innerHTML = '<i class="fa-solid fa-pause"></i>';
+
+                if (temLetra) {
+                    iniciarSincroniaLetra(0);
+                }
+
+            } catch (err) {
+                console.log('Erro ao tocar áudio:', err);
+                previaTocando = false;
+                musicaDaPrevia = null;
+                opcaoPrevia.innerHTML = '<i class="fa-solid fa-play"></i>';
+                alert('Não foi possível tocar o áudio.');
+            }
+
+            audioPrevia.onended = () => {
+                previaTocando = false;
+                musicaDaPrevia = null;
+                opcaoPrevia.innerHTML = '<i class="fa-solid fa-play"></i>';
+                pararSincroniaLetra();
+                if (letraSincronizadaContainer) letraSincronizadaContainer.style.display = 'none';
+            };
+        } else {
+            alert('Áudio não encontrado para esta música.');
+        }
+    } catch (e) {
+        console.error('Erro ao buscar áudio:', e);
+        alert('Erro ao buscar áudio.');
+    } finally {
+        if (loadingPrevia) loadingPrevia.style.display = 'none';
+    }
+}
+
+async function abrirRecomendacoes() {
+    if (!musicaAtual || !modalRecomendacoes) return;
+
+    modalRecomendacoes.classList.add('ativo');
+    modalRecomendacoesLista.innerHTML = '<div style="color:#fff; padding:20px; text-align:center;">Carregando...</div>';
+
+    try {
+        const resp = await fetch(`${SERVER_URL}/api/recomendacoes?artist=${encodeURIComponent(musicaAtual.artist)}`);
+        const data = await resp.json();
+
+        modalRecomendacoesLista.innerHTML = '';
+
+        if (data.length === 0) {
+            modalRecomendacoesLista.innerHTML = '<div style="color:#fff; padding:20px; text-align:center;">Nenhuma recomendação encontrada.</div>';
+        } else {
+            data.forEach(item => {
                 const link = document.createElement('a');
-                link.className = 'card-item';
-                if (index === 0) link.classList.add('ativo');
+                link.className = 'recomendacao-item';
                 link.href = `https://music.youtube.com/search?q=${encodeURIComponent(item.trackName + ' ' + item.artistName)}`;
                 link.target = '_blank';
                 link.rel = 'noopener noreferrer';
 
                 const capaWrapper = document.createElement('div');
-                capaWrapper.className = 'card-capa-wrapper';
+                capaWrapper.className = 'recomendacao-capa';
 
                 const img = document.createElement('img');
                 img.src = item.artworkUrl100.replace('100x100', '300x300');
@@ -240,14 +398,14 @@ async function carregarRecomendacoes(artist) {
                 capaWrapper.appendChild(overlay);
 
                 const info = document.createElement('div');
-                info.className = 'card-info';
+                info.className = 'recomendacao-info';
 
                 const titulo = document.createElement('span');
-                titulo.className = 'card-info-titulo';
+                titulo.className = 'recomendacao-titulo';
                 titulo.textContent = item.trackName;
 
                 const artista = document.createElement('span');
-                artista.className = 'card-info-artista';
+                artista.className = 'recomendacao-artista';
                 artista.textContent = item.artistName;
 
                 info.appendChild(titulo);
@@ -255,22 +413,30 @@ async function carregarRecomendacoes(artist) {
 
                 link.appendChild(capaWrapper);
                 link.appendChild(info);
-                recomendacoesTrack.appendChild(link);
+                modalRecomendacoesLista.appendChild(link);
             });
-
-            totalCards = data.length;
-            indiceAtual = 0;
-            recomendacoesTrack.style.transform = 'translateX(0%)';
-        } else {
-            recomendacoesWrapper.style.display = 'none';
         }
+
+        const botaoFecharWrapper = document.createElement('div');
+        botaoFecharWrapper.className = 'botao-fechar-recomendacoes';
+
+        const botaoFechar = document.createElement('button');
+        botaoFechar.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        botaoFechar.setAttribute('aria-label', 'Fechar recomendações');
+
+        botaoFechar.addEventListener('click', () => {
+            modalRecomendacoes.classList.remove('ativo');
+        });
+
+        botaoFecharWrapper.appendChild(botaoFechar);
+        modalRecomendacoesLista.appendChild(botaoFecharWrapper);
+
     } catch (e) {
-        console.error("Erro ao carregar recomendações:", e);
-        recomendacoesWrapper.style.display = 'none';
+        console.error('Erro ao carregar recomendações:', e);
+        modalRecomendacoesLista.innerHTML = '<div style="color:#fff; padding:20px; text-align:center;">Erro ao carregar recomendações.</div>';
     }
 }
 
-// --- FUNÇÃO PRINCIPAL DO LAST.FM ---
 async function carregarLastFm(userEspecifico = null, forcar = false) {
     const user = userEspecifico || usuarioAtual || inputBusca.value.trim();
     if (!user) return;
@@ -287,8 +453,21 @@ async function carregarLastFm(userEspecifico = null, forcar = false) {
         const passouTempo = agora - ultimaAtualizacao > 30000;
         
         if (assinaturaAtual !== ultimaMusica || forcar) {
+            const chaveNova = `${data.artist}::${data.track}`;
+            if (previaTocando && musicaDaPrevia !== chaveNova) {
+                audioPrevia.pause();
+                audioPrevia.currentTime = 0;
+                previaTocando = false;
+                musicaDaPrevia = null;
+                opcaoPrevia.innerHTML = '<i class="fa-solid fa-play"></i>';
+                pararSincroniaLetra();
+                if (letraSincronizadaContainer) letraSincronizadaContainer.style.display = 'none';
+            }
+
             ultimaMusica = assinaturaAtual;
             ultimaAtualizacao = agora;
+
+            musicaAtual = { artist: data.artist, track: data.track, album: data.album };
 
             painelEl.classList.add('visivel');
             usuarioStatusEl.textContent = user;
@@ -311,12 +490,10 @@ async function carregarLastFm(userEspecifico = null, forcar = false) {
 
             tocarCapaPadrao(data.static_url, data.video_url);
 
-            await carregarRecomendacoes(data.artist);
+            atualizarBotaoFavorito();
 
-            if (data.track && data.artist) {
-                assistiveEl.classList.add('oculto');
-                assistenteVisivel = false;
-            }
+            assistiveEl.classList.add('oculto');
+            assistenteVisivel = false;
 
             if (data.dominant_color) {
                 let { r, g, b } = data.dominant_color;
@@ -339,13 +516,19 @@ function iniciarAtualizacaoAutomatica(user) {
     urlVideoAtual = null;
     videoEstaTocando = false;
     if (loopTimer) { clearInterval(loopTimer); loopTimer = null; }
-    assistiveEl.classList.remove('oculto');
-    assistenteVisivel = true;
+    if (previaTocando) {
+        audioPrevia.pause();
+        audioPrevia.currentTime = 0;
+        previaTocando = false;
+        musicaDaPrevia = null;
+        opcaoPrevia.innerHTML = '<i class="fa-solid fa-play"></i>';
+        pararSincroniaLetra();
+        if (letraSincronizadaContainer) letraSincronizadaContainer.style.display = 'none';
+    }
     carregarLastFm(alvo, true);
     intervaloAtualizacao = setInterval(() => carregarLastFm(alvo, true), 2000); 
 }
 
-// --- EVENTOS DOS BOTÕES ---
 if (opcaoPesquisar) {
     opcaoPesquisar.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -361,6 +544,40 @@ if (opcaoUltimo) {
         if (!ultimo) return alert('Nenhum usuário pesquisado ainda.');
         inputBusca.value = ultimo;
         iniciarAtualizacaoAutomatica(ultimo);
+    });
+}
+
+if (opcaoFavoritar) {
+    opcaoFavoritar.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!musicaAtual) return;
+
+        const favoritos = carregarFavoritos();
+        const chave = `${musicaAtual.artist}::${musicaAtual.track}`;
+        const index = favoritos.indexOf(chave);
+
+        if (index !== -1) {
+            favoritos.splice(index, 1);
+        } else {
+            favoritos.push(chave);
+        }
+
+        salvarFavoritos(favoritos);
+        atualizarBotaoFavorito();
+    });
+}
+
+if (opcaoPrevia) {
+    opcaoPrevia.addEventListener('click', (e) => {
+        e.stopPropagation();
+        tocarPrevia();
+    });
+}
+
+if (opcaoRecomendacoes) {
+    opcaoRecomendacoes.addEventListener('click', (e) => {
+        e.stopPropagation();
+        abrirRecomendacoes();
     });
 }
 
@@ -396,9 +613,8 @@ if (modalPesquisa) {
     });
 }
 
-// --- MOSTRAR O ASSISTENTE NOVAMENTE AO TOCAR NA TELA ---
 document.addEventListener('click', (e) => {
-    if (recomendacoesWrapper.contains(e.target) || assistiveEl.contains(e.target)) {
+    if (assistiveEl.contains(e.target) || modalRecomendacoes.contains(e.target) || modalPesquisa.contains(e.target)) {
         return;
     }
     

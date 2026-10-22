@@ -35,19 +35,12 @@
             </div>
 
             <div class="scrobbles-container" id="scrobbles-container" style="display: none;">
-                <div class="icone-lastfm-wrapper"></div>
-                <div class="separador-bolinha"></div>
                 <span id="total-scrobbles">0 scrobbles</span>
             </div>
-        </div>
-    </div>
 
-    <!-- RECOMENDAÇÕES (SWIPE HORIZONTAL) -->
-    <div class="recomendacoes-wrapper" id="recomendacoes-wrapper" style="display: none;">
-        <div class="recomendacoes-titulo">Você também pode gostar de:</div>
-        <div class="recomendacoes-viewport" id="recomendacoes-viewport">
-            <div class="recomendacoes-track" id="recomendacoes-track">
-                <!-- Os cards serão inseridos via JS -->
+            <!-- LETRA SINCRONIZADA -->
+            <div class="letra-sincronizada-container" id="letra-sincronizada-container" style="display: none;">
+                <div class="letra-sincronizada-scroll" id="letra-sincronizada-scroll"></div>
             </div>
         </div>
     </div>
@@ -60,6 +53,15 @@
                 </button>
                 <button class="assistive-opcao" id="opcao-ultimo" aria-label="Pesquisar último usuário">
                     <i class="fa-solid fa-clock-rotate-left"></i>
+                </button>
+                <button class="assistive-opcao" id="opcao-favoritar" aria-label="Favoritar música">
+                    <i class="fa-regular fa-heart"></i>
+                </button>
+                <button class="assistive-opcao" id="opcao-previa" aria-label="Ouvir prévia de 30s">
+                    <i class="fa-solid fa-play"></i>
+                </button>
+                <button class="assistive-opcao" id="opcao-recomendacoes" aria-label="Ver recomendações">
+                    <i class="fa-solid fa-list"></i>
                 </button>
             </div>
         </div>
@@ -75,6 +77,18 @@
             </div>
         </div>
     </div>
+
+    <div class="modal-recomendacoes" id="modal-recomendacoes">
+        <div class="modal-recomendacoes-container">
+            <div class="modal-recomendacoes-header">
+                <span>Você também pode gostar de:</span>
+            </div>
+            <div class="modal-recomendacoes-lista" id="modal-recomendacoes-lista"></div>
+        </div>
+    </div>
+
+    <!-- ÁUDIO PARA PRÉVIA -->
+    <audio id="audio-previa" style="display: none;"></audio>
 
     <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
     <script src="script.js"></script>
