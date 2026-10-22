@@ -303,16 +303,15 @@ body {
     font-size: var(--ouvindo-tamanho);
     color: rgba(255, 255, 255, 0.6);
     padding-left: 0; 
+    height: 14px; 
 }
 
-/* O ÍCONE DO LAST.FM (12x12, branco, desenhado direto no wrapper) */
+/* ÍCONE DO LAST.FM (12x12, branco) */
 .icone-lastfm-wrapper {
     width: 12px; 
     height: 12px;
     flex-shrink: 0;
     background: #ffffff;
-    
-    /* O SVG é aplicado como máscara */
     -webkit-mask-image: url('last.svg');
     mask-image: url('last.svg');
     -webkit-mask-size: contain;
@@ -323,24 +322,25 @@ body {
     mask-position: center;
 }
 
-/* A bolinha separadora */
+/* BOLINHA SEPARADORA */
 .separador-bolinha {
     width: 3px; 
     height: 3px; 
     border-radius: 50%; 
     background: rgba(255, 255, 255, 0.4);
     flex-shrink: 0;
-    margin-top: 1px; 
+    margin-top: -1px; 
 }
 
-/* Texto dos scrobbles */
+/* TEXTO DOS SCROBBLES (Com o ajuste de 1px para cima) */
 #total-scrobbles {
     font-family: 'MinhaFonteBold', system-ui, sans-serif; 
     font-weight: 700; 
     display: flex;
     align-items: center;
     line-height: 1; 
-    margin-top: 0;
+    position: relative;
+    top: -1px; 
 }
 
 /* ============================================ */
