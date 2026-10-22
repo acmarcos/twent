@@ -13,10 +13,8 @@
 
     <div class="painel" id="painel">
         <div class="capa-central" id="capa-central">
-            <!-- A imagem fica por baixo -->
             <img id="capa-principal-img" src="" alt="">
-            <!-- O vídeo fica por cima (com fade via JS) -->
-            <video id="capa-principal-video" autoplay muted playsinline disablepictureinpicture controlslist="nodownload nofullscreen noremoteplayback noplaybackrate"></video>
+            <video id="capa-principal-video" autoplay muted playsinline disablepictureinpicture controlslist="nodownload nofullscreen noremoteplayback noplaybackrate" style="display:none;"></video>
         </div>
 
         <div class="info-musica-container">
@@ -32,15 +30,16 @@
 
             <!-- Título e Artista -->
             <div class="info-musica">
-                <h1 id="musica"></h1>
+                <div class="titulo-wrapper">
+                    <h1 id="musica"></h1>
+                </div>
                 <p id="artista"></p>
             </div>
 
-            <!-- Last.fm + Separador + Scrobbles -->
+            <!-- Ícone do Last.fm + Bolinha + Scrobbles -->
             <div class="scrobbles-container" id="scrobbles-container" style="display: none;">
-                <div class="icone-lastfm-wrapper">
-                    <div class="icone-lastfm-mask"></div>
-                </div>
+                <!-- Apenas a bolinha branca com o recorte -->
+                <div class="icone-lastfm-wrapper"></div>
                 <div class="separador-bolinha"></div>
                 <span id="total-scrobbles">0 scrobbles</span>
             </div>

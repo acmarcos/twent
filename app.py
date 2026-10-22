@@ -1,5 +1,4 @@
 import os
-import json
 import time
 import requests
 from flask import Flask, request, jsonify, send_from_directory
@@ -63,8 +62,8 @@ def buscar_url_apple_music(artist, album):
         data = resp.json()
         if data.get("resultCount", 0) > 0:
             return data["results"][0].get("collectionViewUrl", "")
-    except Exception as e:
-        print(f"Erro ao buscar URL no iTunes: {e}")
+    except Exception:
+        pass
     return None
 
 def extrair_variante_hls(hls_url, resolucao_desejada="1080x1080"):
@@ -90,6 +89,7 @@ def extrair_variante_hls(hls_url, resolucao_desejada="1080x1080"):
                     return linha
                 return f"{base_url}/{linha}"
 
+        # Fallback para 720p
         for i, linha in enumerate(linhas):
             linha = linha.strip()
             if "720x720" in linha and linha.startswith('#'):
@@ -104,14 +104,15 @@ def extrair_variante_hls(hls_url, resolucao_desejada="1080x1080"):
                     return linha
                 return f"{base_url}/{linha}"
 
+        # Fallback para a primeira disponível
         for linha in linhas:
             linha = linha.strip()
             if linha and not linha.startswith('#'):
                 if linha.startswith('http'):
                     return linha
                 return f"{base_url}/{linha}"
-    except Exception as e:
-        print(f"Erro ao processar HLS: {e}")
+    except Exception:
+        pass
     return None
 
 def buscar_capa_animada_aritra(artist, album):
@@ -154,14 +155,11 @@ def buscar_capa_animada_aritra(artist, album):
     cache_aritra[chave] = {"video_url": video_url, "timestamp": time.time()}
     return video_url
 
-def buscar_capa_com_cache(artist, album):
+def buscar_capa_estatica(artist, album):
     chave = f"{artist}::{album}".lower()
     if chave in cache_capas:
-        entrada = cache_capas[chave]
-        if time.time() - entrada["timestamp"] < 300:
-            return entrada["static_url"]
+        return cache_capas[chave]
 
-    static_url = None
     try:
         itunes_url = "https://itunes.apple.com/search"
         params = {"term": f"{artist} {album}", "media": "music", "entity": "album", "limit": 1}
@@ -171,13 +169,13 @@ def buscar_capa_com_cache(artist, album):
             artwork = data["results"][0].get("artworkUrl100", "")
             if artwork:
                 static_url = artwork.replace("100x100", "1200x1200")
+                cache_capas[chave] = static_url
+                return static_url
     except Exception:
         pass
+    return None
 
-    cache_capas[chave] = {"static_url": static_url, "timestamp": time.time()}
-    return static_url
-
-# --- ROTAS DE ARQUIVOS ---
+# --- ROTAS ---
 
 @app.route('/')
 def home():
@@ -202,8 +200,6 @@ def servir_last():
 @app.route('/fonts/<path:nome>')
 def servir_font(nome):
     return send_from_directory('static/fonts', nome)
-
-# --- ROTA DA API ---
 
 @app.route('/api/lastfm/now-playing')
 def lastfm_now_playing():
@@ -256,7 +252,6 @@ def lastfm_now_playing():
             except Exception:
                 pass
 
-        # Foto do usuário e Scrobbles
         user_image = ""
         scrobbles = 0
         try:
@@ -270,18 +265,14 @@ def lastfm_now_playing():
             track_resp = requests.get(lastfm_url, params=track_info_params, timeout=10).json()
             if 'track' in track_resp and 'userplaycount' in track_resp['track']:
                 scrobbles = int(track_resp['track']['userplaycount'])
-        except Exception as e:
-            print(f"Erro ao buscar dados extras: {e}")
+        except Exception:
+            pass
 
         video_url = None
+        static_url = buscar_capa_estatica(artist_name, album_name)
+        
         if album_name and album_name.strip():
             video_url = buscar_capa_animada_aritra(artist_name, album_name)
-
-        static_url = None
-        if not video_url:
-            static_url = buscar_capa_com_cache(artist_name, album_name)
-        else:
-            static_url = buscar_capa_com_cache(artist_name, album_name)
 
         if not static_url:
             images = track.get("image", [])

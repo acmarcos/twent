@@ -25,13 +25,11 @@ let intervaloAtualizacao = null;
 let ultimaMusica = null;
 let ultimaAtualizacao = 0;
 let usuarioAtual = null;
+let hlsInstance = null;
 
-// CONTROLE DO DOUBLE BUFFER
-let video1 = null;
-let video2 = null;
-let videoAtivo = 1;
-let hls1 = null;
-let hls2 = null;
+let urlVideoAtual = null;
+let videoEstaTocando = false;
+let frameCapturado = false;
 let loopTimer = null;
 
 function calcularLuminancia(r, g, b) {
@@ -51,87 +49,68 @@ function bloquearControlesVideo(video) {
     video.setAttribute('disablepictureinpicture', '');
 }
 
-// --- SISTEMA DOUBLE BUFFER PARA HLS ---
-function criarVideoOculto() {
-    const v = document.createElement('video');
-    v.autoplay = true;
-    v.muted = true;
-    v.playsInline = true;
-    v.setAttribute('playsinline', '');
-    bloquearControlesVideo(v);
-    v.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; object-position:center center; opacity:0; z-index:1; pointer-events:none;';
-    document.getElementById('capa-central').appendChild(v);
-    return v;
+if (capaPrincipalVideoEl) {
+    bloquearControlesVideo(capaPrincipalVideoEl);
 }
 
-function iniciarDoubleBuffer(url) {
+function capturarFrameDoVideo() {
+    if (frameCapturado) return;
+    if (!capaPrincipalVideoEl || capaPrincipalVideoEl.readyState < 2) return;
+    try {
+        const canvas = document.createElement('canvas');
+        canvas.width = capaPrincipalVideoEl.videoWidth || 1080;
+        canvas.height = capaPrincipalVideoEl.videoHeight || 1080;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(capaPrincipalVideoEl, 0, 0, canvas.width, canvas.height);
+        capaPrincipalImgEl.src = canvas.toDataURL('image/png');
+        frameCapturado = true;
+    } catch (e) { console.log('❌ Erro frame:', e); }
+}
+
+function iniciarLoopVideo(videoEl) {
     if (loopTimer) clearInterval(loopTimer);
-    if (hls1) { hls1.destroy(); hls1 = null; }
-    if (hls2) { hls2.destroy(); hls2 = null; }
-    
-    const oldV1 = document.getElementById('dummy-v1');
-    const oldV2 = document.getElementById('dummy-v2');
-    if (oldV1) oldV1.remove();
-    if (oldV2) oldV2.remove();
-
-    capaPrincipalVideoEl.classList.remove('playing');
-    capaPrincipalVideoEl.style.display = 'none';
-
-    video1 = criarVideoOculto();
-    video1.id = 'dummy-v1';
-    video2 = criarVideoOculto();
-    video2.id = 'dummy-v2';
-
-    if (window.Hls && window.Hls.isSupported()) {
-        hls1 = new window.Hls({ enableWorker: true });
-        hls1.loadSource(url);
-        hls1.attachMedia(video1);
-        hls1.on(window.Hls.Events.MANIFEST_PARSED, () => { video1.play().catch(()=>{}); });
-
-        hls2 = new window.Hls({ enableWorker: true });
-        hls2.loadSource(url);
-        hls2.attachMedia(video2);
-        hls2.on(window.Hls.Events.MANIFEST_PARSED, () => { video2.pause(); });
-    }
-
-    video1.style.opacity = '1';
-    video1.style.zIndex = '2';
-    video2.style.opacity = '0';
-    video2.style.zIndex = '1';
-    videoAtivo = 1;
-
     loopTimer = setInterval(() => {
-        const videoAtual = videoAtivo === 1 ? video1 : video2;
-        const videoProximo = videoAtivo === 1 ? video2 : video1;
-
-        if (!videoAtual.duration || isNaN(videoAtual.duration)) return;
-
-        if (videoAtual.duration - videoAtual.currentTime <= 0.5) {
-            videoProximo.currentTime = 0;
-            videoProximo.play().catch(()=>{});
-            
-            videoProximo.style.zIndex = '2';
-            videoProximo.style.opacity = '1';
-            videoAtual.style.zIndex = '1';
-            videoAtual.style.opacity = '0';
-
-            videoAtivo = videoAtivo === 1 ? 2 : 1;
+        if (!videoEl || !videoEl.duration || isNaN(videoEl.duration)) return;
+        if (videoEl.duration - videoEl.currentTime <= 0.4) {
+            videoEl.currentTime = 0;
         }
     }, 50);
 }
 
-function pararDoubleBuffer() {
+function tocarHLS(videoEl, url, staticUrl) {
+    if (!videoEl) return;
+    if (urlVideoAtual === url && videoEstaTocando) return;
+
+    urlVideoAtual = url;
+    videoEstaTocando = false;
+    frameCapturado = false;
+    
+    if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
     if (loopTimer) { clearInterval(loopTimer); loopTimer = null; }
-    if (hls1) { hls1.destroy(); hls1 = null; }
-    if (hls2) { hls2.destroy(); hls2 = null; }
     
-    const oldV1 = document.getElementById('dummy-v1');
-    const oldV2 = document.getElementById('dummy-v2');
-    if (oldV1) oldV1.remove();
-    if (oldV2) oldV2.remove();
-    
-    capaPrincipalVideoEl.style.display = 'none';
-    capaPrincipalVideoEl.classList.remove('playing');
+    if (staticUrl && staticUrl.trim() !== "") capaPrincipalImgEl.src = staticUrl;
+
+    videoEl.style.display = 'block';
+    videoEl.currentTime = 0;
+
+    videoEl.addEventListener('playing', function onPlaying() {
+        videoEl.removeEventListener('playing', onPlaying);
+        videoEstaTocando = true;
+        setTimeout(capturarFrameDoVideo, 500);
+        iniciarLoopVideo(videoEl);
+    }, { once: true });
+
+    if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
+        videoEl.src = url;
+        videoEl.play().catch(() => {});
+    } else if (window.Hls && window.Hls.isSupported()) {
+        hlsInstance = new window.Hls({ enableWorker: true });
+        hlsInstance.loadSource(url);
+        hlsInstance.attachMedia(videoEl);
+        hlsInstance.on(window.Hls.Events.MANIFEST_PARSED, () => {
+            videoEl.play().catch(() => {});
+        });
+    }
 }
 
 function tocarCapaPadrao(staticUrl, videoUrl) {
@@ -140,33 +119,32 @@ function tocarCapaPadrao(staticUrl, videoUrl) {
         capaImgEl.src = staticUrl;
         capaImgEl.classList.add('visivel');
     }
-
     if (videoUrl && videoUrl.trim() !== "") {
-        capaPrincipalImgEl.style.display = 'none';
-        iniciarDoubleBuffer(videoUrl);
+        tocarHLS(capaPrincipalVideoEl, videoUrl, staticUrl);
     } else {
-        capaPrincipalImgEl.style.display = 'block';
-        pararDoubleBuffer();
+        urlVideoAtual = null;
+        videoEstaTocando = false;
+        if (loopTimer) { clearInterval(loopTimer); loopTimer = null; }
+        capaPrincipalVideoEl.style.display = 'none';
+        capaPrincipalVideoEl.pause();
+        if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
     }
 }
 
 async function carregarLastFm(userEspecifico = null, forcar = false) {
     const user = userEspecifico || usuarioAtual || inputBusca.value.trim();
     if (!user) return;
-
     usuarioAtual = user;
     localStorage.setItem(STORAGE_KEY, user);
 
     try {
         const response = await fetch(`${SERVER_URL}/api/lastfm/now-playing?user=${encodeURIComponent(user)}`);
         const data = await response.json();
-
         if (data.error || !data.track || !data.artist) return;
 
         const assinaturaAtual = `${data.artist}::${data.track}::${data.album}`;
         const agora = Date.now();
         const passouTempo = agora - ultimaAtualizacao > 30000;
-
         if (assinaturaAtual === ultimaMusica && !passouTempo && !forcar) return;
 
         ultimaMusica = assinaturaAtual;
@@ -200,7 +178,7 @@ async function carregarLastFm(userEspecifico = null, forcar = false) {
             telaEl.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
         }
     } catch (error) {
-        console.error('Erro ao buscar Last.fm:', error);
+        console.error('Erro Last.fm:', error);
     }
 }
 
@@ -210,6 +188,9 @@ function iniciarAtualizacaoAutomatica(user) {
     if (intervaloAtualizacao) clearInterval(intervaloAtualizacao);
     ultimaMusica = null;
     ultimaAtualizacao = 0;
+    urlVideoAtual = null;
+    videoEstaTocando = false;
+    if (loopTimer) { clearInterval(loopTimer); loopTimer = null; }
     carregarLastFm(alvo, true);
     intervaloAtualizacao = setInterval(() => carregarLastFm(alvo, true), 2000); 
 }

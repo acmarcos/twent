@@ -138,10 +138,6 @@ body {
     mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
 }
 
-#capa-principal-video {
-    display: none;
-}
-
 #capa-principal-img {
     width: 100%;
     height: 100%;
@@ -151,9 +147,38 @@ body {
     position: absolute;
     top: 0;
     left: 0;
-    z-index: 1; 
-    opacity: 1;
-    transition: opacity 0.5s ease;
+    z-index: 1;
+}
+
+#capa-principal-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; 
+    object-position: center center;
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    background: transparent; 
+}
+
+#capa-principal-video::-webkit-media-controls,
+#capa-principal-video::-webkit-media-controls-enclosure,
+#capa-principal-video::-webkit-media-controls-panel,
+#capa-principal-video::-webkit-media-controls-play-button,
+#capa-principal-video::-webkit-media-controls-start-playback-button,
+#capa-principal-video::-webkit-media-controls-overlay-play-button,
+#capa-principal-video::-webkit-media-controls-picture-in-picture-button,
+#capa-principal-video::-webkit-media-controls-fullscreen-button,
+#capa-principal-video::-webkit-media-controls-download-button,
+#capa-principal-video::-webkit-media-controls-toggle-closed-captions-button,
+#capa-principal-video::-webkit-media-controls-volume-slider,
+#capa-principal-video::-webkit-media-controls-mute-button {
+    display: none !important;
+    -webkit-appearance: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
 }
 
 .info-musica-container {
@@ -170,16 +195,17 @@ body {
     z-index: 3;
 }
 
+/* --- TOPO: FOTO + "ESTÁ OUVINDO" --- */
 .status-lastfm {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.5rem; 
     margin-bottom: 6px; 
 }
 
 .foto-usuario-wrapper {
-    width: 12px; 
-    height: 12px; 
+    width: 14px; 
+    height: 14px; 
     border-radius: 50%;
     overflow: hidden;
     background: rgba(255, 255, 255, 0.2); 
@@ -192,29 +218,28 @@ body {
 #foto-usuario {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: cover; 
 }
 
 .texto-lastfm {
     flex: 1;
-    min-width: 0;
     font-family: 'MinhaFonteRegular', system-ui, sans-serif;
     font-size: var(--ouvindo-tamanho); 
-    line-height: 1.25; 
+    line-height: 1.2; 
     font-weight: 400;
     color: var(--cor-texto-secundario);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    text-align: left;
+    display: flex;
+    align-items: baseline; 
 }
 
 #usuario-status {
     font-family: 'MinhaFonteBold', system-ui, sans-serif;
     font-weight: 700;
     color: inherit; 
+    margin-right: 4px; 
 }
 
+/* --- MEIO: MÚSICA E ARTISTA --- */
 .info-musica {
     display: flex;
     flex-direction: column;
@@ -224,23 +249,32 @@ body {
     width: 100%;
 }
 
+/* TÍTULO COM EFEITO FADE E 2 LINHAS */
+.titulo-wrapper {
+    width: 100%;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to right, #000 75%, transparent 95%);
+    mask-image: linear-gradient(to right, #000 75%, transparent 95%);
+    margin-bottom: 3px;
+}
+
 .info-musica h1 {
     font-family: 'MinhaFonteHeavy', system-ui, sans-serif;
     font-size: var(--titulo-tamanho);
     line-height: 1.2; 
     margin-top: 0px; 
-    margin-bottom: 3px; 
+    margin-bottom: 0px; 
     font-weight: 900;
     letter-spacing: -0.02em;
     color: #fff;
     width: 100%;
-    max-width: 100%;
     text-align: left;
     white-space: normal; 
     word-break: break-word; 
-    overflow: visible; 
-    -webkit-mask-image: none;
-    mask-image: none;
+    display: block;
 }
 
 .info-musica #artista {
@@ -252,7 +286,6 @@ body {
     font-weight: 400;
     color: rgba(255, 255, 255, 0.75);
     width: 100%;
-    max-width: 100%;
     text-align: left;
     white-space: nowrap;
     overflow: hidden;
@@ -260,6 +293,7 @@ body {
     mask-image: linear-gradient(to right, #000 90%, transparent 100%);
 }
 
+/* --- BASE: LAST.FM + SCROBBLES --- */
 .scrobbles-container {
     display: flex;
     align-items: center;
@@ -270,28 +304,25 @@ body {
     color: rgba(255, 255, 255, 0.6);
 }
 
+/* ÍCONE DO LAST.FM COM FUNDO BRANCO E RECORTE */
 .icone-lastfm-wrapper {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    width: 12px; 
-    height: 12px;
-}
-
-.icone-lastfm-mask {
-    width: 12px; 
-    height: 12px;
+    width: 14px; 
+    height: 14px;
     background: #ffffff;
+    border-radius: 50%;
+    
     -webkit-mask-image: url('last.svg');
     mask-image: url('last.svg');
-    -webkit-mask-size: contain;
-    mask-size: contain;
+    -webkit-mask-size: 10px 10px;
+    mask-size: 10px 10px;
     -webkit-mask-repeat: no-repeat;
     mask-repeat: no-repeat;
     -webkit-mask-position: center;
     mask-position: center;
-    display: block;
 }
 
 .separador-bolinha {
@@ -302,8 +333,16 @@ body {
 }
 
 #total-scrobbles {
-    font-family: 'MinhaFonteRegular', system-ui, sans-serif;
+    font-family: 'MinhaFonteBold', system-ui, sans-serif; 
+    font-weight: 700; 
+    display: flex;
+    align-items: center;
+    line-height: 1.2;
 }
+
+/* ============================================ */
+/* ASSISTENTE (PAINEL DEITADO EMBAIXO) */
+/* ============================================ */
 
 .assistive {
     position: fixed;
@@ -364,6 +403,10 @@ body {
 .assistive-opcao:active {
     transform: scale(0.9);
 }
+
+/* ============================================ */
+/* MODAL DE PESQUISA */
+/* ============================================ */
 
 .modal-pesquisa {
     position: fixed;
@@ -452,6 +495,6 @@ body {
 
 @media (max-width: 420px) {
     .modal-container {
-        width: 260px; 
+        width: 260px;
     }
 }
