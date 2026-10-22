@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Twent</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Caminho do CSS ajustado (sem a barra inicial) -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -14,8 +13,10 @@
 
     <div class="painel" id="painel">
         <div class="capa-central" id="capa-central">
-            <video id="capa-principal-video" autoplay muted playsinline disablepictureinpicture controlslist="nodownload nofullscreen noremoteplayback noplaybackrate" style="display:none;"></video>
+            <!-- A imagem fica por baixo -->
             <img id="capa-principal-img" src="" alt="">
+            <!-- O vídeo fica por cima (com fade via JS) -->
+            <video id="capa-principal-video" autoplay muted playsinline disablepictureinpicture controlslist="nodownload nofullscreen noremoteplayback noplaybackrate"></video>
         </div>
 
         <div class="info-musica-container">
@@ -35,7 +36,7 @@
                 <p id="artista"></p>
             </div>
 
-            <!-- Last.fm + Separador + Scrobbles (Abaixo do artista) -->
+            <!-- Last.fm + Separador + Scrobbles -->
             <div class="scrobbles-container" id="scrobbles-container" style="display: none;">
                 <div class="icone-lastfm-wrapper">
                     <div class="icone-lastfm-mask"></div>
@@ -71,7 +72,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
-    <!-- Caminho do JS ajustado (sem a barra inicial) -->
     <script src="script.js"></script>
 </body>
 </html>

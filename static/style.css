@@ -138,46 +138,22 @@ body {
     mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
 }
 
-#capa-principal-video,
+#capa-principal-video {
+    display: none;
+}
+
 #capa-principal-img {
     width: 100%;
     height: 100%;
     object-fit: cover; 
-    object-position: center top;
+    object-position: center center;
     display: block;
     position: absolute;
     top: 0;
     left: 0;
-    z-index: 2;
-    transform: none;
-}
-
-#capa-principal-video {
-    will-change: transform;
-    transform: translateZ(0);
-    backface-visibility: hidden;
-    pointer-events: none;
-    user-select: none;
-    -webkit-user-select: none;
-    -webkit-touch-callout: none;
-}
-
-#capa-principal-video::-webkit-media-controls,
-#capa-principal-video::-webkit-media-controls-enclosure,
-#capa-principal-video::-webkit-media-controls-panel,
-#capa-principal-video::-webkit-media-controls-play-button,
-#capa-principal-video::-webkit-media-controls-start-playback-button,
-#capa-principal-video::-webkit-media-controls-overlay-play-button,
-#capa-principal-video::-webkit-media-controls-picture-in-picture-button,
-#capa-principal-video::-webkit-media-controls-fullscreen-button,
-#capa-principal-video::-webkit-media-controls-download-button,
-#capa-principal-video::-webkit-media-controls-toggle-closed-captions-button,
-#capa-principal-video::-webkit-media-controls-volume-slider,
-#capa-principal-video::-webkit-media-controls-mute-button {
-    display: none !important;
-    -webkit-appearance: none !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
+    z-index: 1; 
+    opacity: 1;
+    transition: opacity 0.5s ease;
 }
 
 .info-musica-container {
@@ -194,7 +170,6 @@ body {
     z-index: 3;
 }
 
-/* --- TOPO: FOTO + "ESTÁ OUVINDO" --- */
 .status-lastfm {
     display: flex;
     align-items: center;
@@ -240,7 +215,6 @@ body {
     color: inherit; 
 }
 
-/* --- MEIO: MÚSICA E ARTISTA --- */
 .info-musica {
     display: flex;
     flex-direction: column;
@@ -286,7 +260,6 @@ body {
     mask-image: linear-gradient(to right, #000 90%, transparent 100%);
 }
 
-/* --- BASE: LAST.FM + BOLINHA + SCROBBLES --- */
 .scrobbles-container {
     display: flex;
     align-items: center;
@@ -331,10 +304,6 @@ body {
 #total-scrobbles {
     font-family: 'MinhaFonteRegular', system-ui, sans-serif;
 }
-
-/* ============================================ */
-/* ASSISTENTE (PAINEL DEITADO EMBAIXO) */
-/* ============================================ */
 
 .assistive {
     position: fixed;
@@ -395,10 +364,6 @@ body {
 .assistive-opcao:active {
     transform: scale(0.9);
 }
-
-/* ============================================ */
-/* MODAL DE PESQUISA */
-/* ============================================ */
 
 .modal-pesquisa {
     position: fixed;
