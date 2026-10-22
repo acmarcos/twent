@@ -1,7 +1,5 @@
 import os
 import time
-import re
-import subprocess
 import requests
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
@@ -19,7 +17,6 @@ LASTFM_API_KEY = os.getenv("LASTFM_API_KEY")
 
 cache_capas = {}
 cache_aritra = {}
-cache_audio_urls = {}
 
 ARITRA_API = "https://api.aritra.ovh/v1"
 
@@ -213,48 +210,29 @@ def servir_font(nome):
     return send_from_directory('static/fonts', nome)
 
 # ============================================
-# ROTA DE ÁUDIO COMPLETO (STREAMING DIRETO DO YOUTUBE)
+# ROTA DE PRÉVIA (APPLE MUSIC)
 # ============================================
 
-@app.route('/api/audio-completo')
-def buscar_audio_completo():
+@app.route('/api/previa')
+def buscar_previa():
     artist = request.args.get('artist', '')
     track = request.args.get('track', '')
 
     if not artist or not track:
         return jsonify({"error": "Artista e música são obrigatórios"}), 400
 
-    chave = f"{artist}::{track}".lower()
-
-    if chave in cache_audio_urls:
-        entrada = cache_audio_urls[chave]
-        if time.time() - entrada["timestamp"] < 3600:
-            return jsonify({"audioUrl": entrada["url"], "startTime": 0})
-
     try:
-        comando = [
-            "yt-dlp",
-            "-f", "bestaudio/best",
-            "--get-url",
-            f"ytsearch1:{artist} - {track} audio"
-        ]
-        resultado = subprocess.run(comando, capture_output=True, text=True, timeout=20)
-        
-        if resultado.returncode != 0 or not resultado.stdout.strip():
-            return jsonify({"error": "Não foi possível obter o áudio."}), 500
+        url = f"https://itunes.apple.com/search?term={artist}+{track}&entity=song&limit=1"
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        resp = requests.get(url, headers=headers, timeout=10).json()
 
-        audio_url = resultado.stdout.strip().split('\n')[0]
-
-        cache_audio_urls[chave] = {"url": audio_url, "timestamp": time.time()}
-
-        return jsonify({
-            "audioUrl": audio_url,
-            "startTime": 0
-        })
-
+        if resp.get('resultCount', 0) > 0:
+            preview_url = resp['results'][0].get('previewUrl', '')
+            return jsonify({"previewUrl": preview_url})
+        else:
+            return jsonify({"previewUrl": ""}), 404
     except Exception as e:
-        print(f"Erro ao obter áudio: {e}")
-        return jsonify({"error": "Não foi possível obter o áudio."}), 500
+        return jsonify({"error": str(e)}), 500
 
 # ============================================
 # ROTA DO LAST.FM
@@ -379,32 +357,6 @@ def recomendacoes():
             })
         
         return jsonify(resultados)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-# ============================================
-# ROTA DE LETRA SINCRONIZADA (LRCLIB)
-# ============================================
-
-@app.route('/api/letra-sincronizada')
-def buscar_letra_sincronizada():
-    artist = request.args.get('artist', '')
-    track = request.args.get('track', '')
-
-    if not artist or not track:
-        return jsonify({"error": "Artista e música são obrigatórios"}), 400
-
-    try:
-        url = f"https://lrclib.net/api/get?artist_name={artist}&track_name={track}"
-        resp = requests.get(url, timeout=10)
-        if resp.status_code == 200:
-            data = resp.json()
-            return jsonify({
-                "syncedLyrics": data.get("syncedLyrics", ""),
-                "plainLyrics": data.get("plainLyrics", "")
-            })
-        else:
-            return jsonify({"syncedLyrics": "", "plainLyrics": ""}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

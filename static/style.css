@@ -195,7 +195,6 @@ body {
     z-index: 3;
 }
 
-/* --- TOPO: FOTO + "ESTÁ OUVINDO" --- */
 .status-lastfm {
     display: flex;
     align-items: center;
@@ -239,7 +238,6 @@ body {
     margin-right: 4px; 
 }
 
-/* --- MEIO: MÚSICA E ARTISTA --- */
 .info-musica {
     display: flex;
     flex-direction: column;
@@ -292,7 +290,6 @@ body {
     mask-image: linear-gradient(to right, #000 90%, transparent 100%);
 }
 
-/* --- BASE: SCROBBLES --- */
 .scrobbles-container {
     display: flex;
     align-items: center; 
@@ -313,61 +310,6 @@ body {
     position: relative;
     top: -1px; 
     color: rgba(255, 255, 255, 0.4);
-}
-
-/* ============================================ */
-/* LETRA SINCRONIZADA (12PT E LINHAS MAIS JUNTAS) */
-/* ============================================ */
-
-.letra-sincronizada-container {
-    width: 100%;
-    margin-top: 10px;
-    height: 120px; /* Altura ajustada para 3 linhas mais juntas */
-    overflow: hidden;
-    position: relative;
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
-    mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
-}
-
-.letra-sincronizada-scroll {
-    width: 100%;
-    height: 100%;
-    overflow-y: auto;
-    overflow-x: hidden;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    scroll-behavior: smooth;
-    padding: 40px 0; /* Padding reduzido para linhas mais juntas */
-}
-
-.letra-sincronizada-scroll::-webkit-scrollbar {
-    display: none;
-}
-
-/* LINHA NÃO ATIVA - 12PT, QUEBRA DE LINHA E DESFOCADA */
-.linha-sincronizada {
-    display: block;
-    width: 100%;
-    text-align: left;
-    padding: 4px 0; /* Padding reduzido para linhas mais juntas */
-    font-family: 'MinhaFonteBold', system-ui, sans-serif;
-    font-size: 12pt;
-    font-weight: 700;
-    color: #fff;
-    line-height: 1.2; /* Line-height reduzido */
-    white-space: normal;      
-    word-break: break-word;   
-    min-height: 40px;         /* Altura mínima reduzida */
-    filter: blur(3px);
-    opacity: 0.5;
-    transition: filter 0.3s ease, opacity 0.3s ease;
-}
-
-/* LINHA ATIVA - NÍTIDA */
-.linha-sincronizada.ativa {
-    filter: blur(0);
-    opacity: 1;
-    color: #fff;
 }
 
 /* ============================================ */
@@ -535,7 +477,7 @@ body {
 }
 
 /* ============================================ */
-/* MODAL DE RECOMENDAÇÕES (TELA CHEIA) */
+/* MODAL DE RECOMENDAÇÕES */
 /* ============================================ */
 
 .modal-recomendacoes {

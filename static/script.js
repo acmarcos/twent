@@ -24,10 +24,6 @@ const btnPesquisarConfirmar = document.getElementById('btn-pesquisar-confirmar')
 const modalRecomendacoes = document.getElementById('modal-recomendacoes');
 const modalRecomendacoesLista = document.getElementById('modal-recomendacoes-lista');
 const audioPrevia = document.getElementById('audio-previa');
-const loadingPrevia = document.getElementById('loading-previa');
-
-const letraSincronizadaContainer = document.getElementById('letra-sincronizada-container');
-const letraSincronizadaScroll = document.getElementById('letra-sincronizada-scroll');
 
 const assistiveEl = document.getElementById('assistive');
 
@@ -52,10 +48,6 @@ let musicaAtual = null;
 
 let previaTocando = false;
 let musicaDaPrevia = null;
-
-let letraSincronizada = [];
-let indiceLetraAtual = -1;
-let intervaloSincronia = null;
 
 function calcularLuminancia(r, g, b) {
     const canais = [r, g, b].map(v => {
@@ -181,107 +173,6 @@ function atualizarBotaoFavorito() {
     }
 }
 
-async function buscarLetraSincronizada(artist, track) {
-    try {
-        const url = `${SERVER_URL}/api/letra-sincronizada?artist=${encodeURIComponent(artist)}&track=${encodeURIComponent(track)}`;
-        const resp = await fetch(url);
-        const data = await resp.json();
-
-        if (data.syncedLyrics) {
-            const linhas = data.syncedLyrics.split('\n');
-            letraSincronizada = [];
-
-            linhas.forEach(linha => {
-                const match = linha.match(/\[(\d+):(\d+)\.(\d+)\](.*)/);
-                if (match) {
-                    const minutos = parseInt(match[1]);
-                    const segundos = parseInt(match[2]);
-                    const centesimos = parseInt(match[3]);
-                    const tempo = minutos * 60 + segundos + centesimos / 100;
-                    const texto = match[4].trim();
-                    if (texto) {
-                        letraSincronizada.push({ tempo, texto });
-                    }
-                }
-            });
-
-            return letraSincronizada.length > 0;
-        }
-    } catch (e) {
-        console.error('Erro ao buscar letra sincronizada:', e);
-    }
-    return false;
-}
-
-function renderizarLetraSincronizada() {
-    if (!letraSincronizadaScroll) return;
-    letraSincronizadaScroll.innerHTML = '';
-
-    if (letraSincronizada.length === 0) {
-        letraSincronizadaScroll.innerHTML = '<div class="linha-sincronizada">Letra não encontrada.</div>';
-        return;
-    }
-
-    letraSincronizada.forEach((linha, index) => {
-        const div = document.createElement('div');
-        div.className = 'linha-sincronizada';
-        div.id = `linha-sinc-${index}`;
-        div.textContent = linha.texto;
-        letraSincronizadaScroll.appendChild(div);
-    });
-}
-
-function iniciarSincroniaLetra(startTimeOffset = 0) {
-    if (intervaloSincronia) clearInterval(intervaloSincronia);
-    indiceLetraAtual = -1;
-
-    const aguardarAudio = setInterval(() => {
-        if (audioPrevia.readyState >= 2) {
-            clearInterval(aguardarAudio);
-            
-            intervaloSincronia = setInterval(() => {
-                if (!audioPrevia || audioPrevia.paused) return;
-
-                const tempoAtual = audioPrevia.currentTime + startTimeOffset;
-                let novoIndice = -1;
-
-                for (let i = 0; i < letraSincronizada.length; i++) {
-                    if (tempoAtual >= letraSincronizada[i].tempo) {
-                        novoIndice = i;
-                    } else {
-                        break;
-                    }
-                }
-
-                if (novoIndice !== indiceLetraAtual && novoIndice >= 0) {
-                    indiceLetraAtual = novoIndice;
-
-                    const linhas = letraSincronizadaScroll.querySelectorAll('.linha-sincronizada');
-                    linhas.forEach(l => l.classList.remove('ativa'));
-
-                    const linhaAtiva = document.getElementById(`linha-sinc-${novoIndice}`);
-                    if (linhaAtiva) {
-                        linhaAtiva.classList.add('ativa');
-                        linhaAtiva.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                }
-            }, 50);
-        }
-    }, 100);
-}
-
-function pararSincroniaLetra() {
-    if (intervaloSincronia) {
-        clearInterval(intervaloSincronia);
-        intervaloSincronia = null;
-    }
-    indiceLetraAtual = -1;
-    if (letraSincronizadaScroll) {
-        const linhas = letraSincronizadaScroll.querySelectorAll('.linha-sincronizada');
-        linhas.forEach(l => l.classList.remove('ativa'));
-    }
-}
-
 async function tocarPrevia() {
     if (!musicaAtual) return;
 
@@ -293,8 +184,6 @@ async function tocarPrevia() {
         previaTocando = false;
         musicaDaPrevia = null;
         opcaoPrevia.innerHTML = '<i class="fa-solid fa-play"></i>';
-        pararSincroniaLetra();
-        if (letraSincronizadaContainer) letraSincronizadaContainer.style.display = 'none';
         return;
     }
 
@@ -303,62 +192,41 @@ async function tocarPrevia() {
         audioPrevia.currentTime = 0;
         previaTocando = false;
         musicaDaPrevia = null;
-        pararSincroniaLetra();
     }
 
-    if (loadingPrevia) loadingPrevia.style.display = 'flex';
-
     try {
-        const url = `${SERVER_URL}/api/audio-completo?artist=${encodeURIComponent(musicaAtual.artist)}&track=${encodeURIComponent(musicaAtual.track)}`;
+        const url = `${SERVER_URL}/api/previa?artist=${encodeURIComponent(musicaAtual.artist)}&track=${encodeURIComponent(musicaAtual.track)}`;
         const resp = await fetch(url);
         const data = await resp.json();
 
-        if (data.audioUrl) {
-            audioPrevia.src = data.audioUrl;
+        if (data.previewUrl) {
+            audioPrevia.src = data.previewUrl;
             audioPrevia.load();
-
-            const temLetra = await buscarLetraSincronizada(musicaAtual.artist, musicaAtual.track);
-
-            if (temLetra) {
-                letraSincronizadaContainer.style.display = 'block';
-                renderizarLetraSincronizada();
-            } else {
-                letraSincronizadaContainer.style.display = 'none';
-            }
 
             try {
                 await audioPrevia.play();
                 previaTocando = true;
                 musicaDaPrevia = chaveAtual;
                 opcaoPrevia.innerHTML = '<i class="fa-solid fa-pause"></i>';
-
-                if (temLetra) {
-                    iniciarSincroniaLetra(0);
-                }
-
             } catch (err) {
-                console.log('Erro ao tocar áudio:', err);
+                console.log('Erro ao tocar prévia:', err);
                 previaTocando = false;
                 musicaDaPrevia = null;
                 opcaoPrevia.innerHTML = '<i class="fa-solid fa-play"></i>';
-                alert('Não foi possível tocar o áudio.');
+                alert('Não foi possível tocar a prévia.');
             }
 
             audioPrevia.onended = () => {
                 previaTocando = false;
                 musicaDaPrevia = null;
                 opcaoPrevia.innerHTML = '<i class="fa-solid fa-play"></i>';
-                pararSincroniaLetra();
-                if (letraSincronizadaContainer) letraSincronizadaContainer.style.display = 'none';
             };
         } else {
-            alert('Áudio não encontrado para esta música.');
+            alert('Prévia não encontrada para esta música.');
         }
     } catch (e) {
-        console.error('Erro ao buscar áudio:', e);
-        alert('Erro ao buscar áudio.');
-    } finally {
-        if (loadingPrevia) loadingPrevia.style.display = 'none';
+        console.error('Erro ao buscar prévia:', e);
+        alert('Erro ao buscar prévia.');
     }
 }
 
@@ -460,8 +328,6 @@ async function carregarLastFm(userEspecifico = null, forcar = false) {
                 previaTocando = false;
                 musicaDaPrevia = null;
                 opcaoPrevia.innerHTML = '<i class="fa-solid fa-play"></i>';
-                pararSincroniaLetra();
-                if (letraSincronizadaContainer) letraSincronizadaContainer.style.display = 'none';
             }
 
             ultimaMusica = assinaturaAtual;
@@ -522,8 +388,6 @@ function iniciarAtualizacaoAutomatica(user) {
         previaTocando = false;
         musicaDaPrevia = null;
         opcaoPrevia.innerHTML = '<i class="fa-solid fa-play"></i>';
-        pararSincroniaLetra();
-        if (letraSincronizadaContainer) letraSincronizadaContainer.style.display = 'none';
     }
     carregarLastFm(alvo, true);
     intervaloAtualizacao = setInterval(() => carregarLastFm(alvo, true), 2000); 
