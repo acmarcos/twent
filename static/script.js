@@ -17,6 +17,9 @@ const modalPesquisa = document.getElementById('modal-pesquisa');
 const inputBusca = document.getElementById('input-busca');
 const btnPesquisarConfirmar = document.getElementById('btn-pesquisar-confirmar');
 
+const carrosselContainer = document.getElementById('carrossel-container');
+const carrosselScrollEl = document.getElementById('carrossel-scroll');
+
 const IS_LOCAL = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
 const SERVER_URL = IS_LOCAL ? 'http://127.0.0.1:5000' : window.location.origin;
 const STORAGE_KEY = 'twent_ultimo_usuario';
@@ -131,6 +134,65 @@ function tocarCapaPadrao(staticUrl, videoUrl) {
     }
 }
 
+// --- CARREGAR CARROSSEL DE RECOMENDAÇÕES ---
+async function carregarCarrossel(artist) {
+    if (!carrosselScrollEl) return;
+    carrosselScrollEl.innerHTML = '';
+    carrosselContainer.style.display = 'none';
+
+    if (!artist) return;
+
+    try {
+        const response = await fetch(`${SERVER_URL}/api/recomendacoes?artist=${encodeURIComponent(artist)}`);
+        const data = await response.json();
+
+        if (data.length > 0) {
+            carrosselContainer.style.display = 'flex';
+            
+            data.forEach(item => {
+                const link = document.createElement('a');
+                link.className = 'carrossel-item';
+                link.href = `https://music.youtube.com/search?q=${encodeURIComponent(item.trackName + ' ' + item.artistName)}`;
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+
+                const capaWrapper = document.createElement('div');
+                capaWrapper.className = 'carrossel-capa-wrapper';
+
+                const img = document.createElement('img');
+                img.src = item.artworkUrl100.replace('100x100', '300x300');
+                img.alt = item.trackName;
+
+                const overlay = document.createElement('div');
+                overlay.className = 'overlay';
+
+                capaWrapper.appendChild(img);
+                capaWrapper.appendChild(overlay);
+
+                const info = document.createElement('div');
+                info.className = 'carrossel-info';
+
+                const titulo = document.createElement('span');
+                titulo.className = 'carrossel-info-titulo';
+                titulo.textContent = item.trackName;
+
+                const artista = document.createElement('span');
+                artista.className = 'carrossel-info-artista';
+                artista.textContent = item.artistName;
+
+                info.appendChild(titulo);
+                info.appendChild(artista);
+
+                link.appendChild(capaWrapper);
+                link.appendChild(info);
+                carrosselScrollEl.appendChild(link);
+            });
+        }
+    } catch (e) {
+        console.error("Erro ao carregar carrossel:", e);
+    }
+}
+
 async function carregarLastFm(userEspecifico = null, forcar = false) {
     const user = userEspecifico || usuarioAtual || inputBusca.value.trim();
     if (!user) return;
@@ -145,37 +207,41 @@ async function carregarLastFm(userEspecifico = null, forcar = false) {
         const assinaturaAtual = `${data.artist}::${data.track}::${data.album}`;
         const agora = Date.now();
         const passouTempo = agora - ultimaAtualizacao > 30000;
-        if (assinaturaAtual === ultimaMusica && !passouTempo && !forcar) return;
+        
+        if (assinaturaAtual !== ultimaMusica || forcar) {
+            ultimaMusica = assinaturaAtual;
+            ultimaAtualizacao = agora;
 
-        ultimaMusica = assinaturaAtual;
-        ultimaAtualizacao = agora;
+            painelEl.classList.add('visivel');
+            usuarioStatusEl.textContent = user;
+            musicaEl.textContent = data.track;
+            artistaEl.textContent = data.artist;
 
-        painelEl.classList.add('visivel');
-        usuarioStatusEl.textContent = user;
-        musicaEl.textContent = data.track;
-        artistaEl.textContent = data.artist;
+            if (data.user_image && data.user_image.trim() !== "") {
+                fotoUsuarioEl.src = data.user_image;
+                fotoUsuarioEl.style.display = 'block';
+            } else {
+                fotoUsuarioEl.style.display = 'none';
+            }
 
-        if (data.user_image && data.user_image.trim() !== "") {
-            fotoUsuarioEl.src = data.user_image;
-            fotoUsuarioEl.style.display = 'block';
-        } else {
-            fotoUsuarioEl.style.display = 'none';
-        }
+            if (data.scrobbles !== undefined && data.scrobbles !== null) {
+                totalScrobblesEl.textContent = `${data.scrobbles.toLocaleString('pt-BR')} scrobbles`;
+                scrobblesContainer.style.display = 'flex';
+            } else {
+                scrobblesContainer.style.display = 'none';
+            }
 
-        if (data.scrobbles !== undefined && data.scrobbles !== null) {
-            totalScrobblesEl.textContent = `${data.scrobbles.toLocaleString('pt-BR')} scrobbles`;
-            scrobblesContainer.style.display = 'flex';
-        } else {
-            scrobblesContainer.style.display = 'none';
-        }
+            tocarCapaPadrao(data.static_url, data.video_url);
 
-        tocarCapaPadrao(data.static_url, data.video_url);
+            // Carrega o carrossel
+            await carregarCarrossel(data.artist);
 
-        if (data.dominant_color) {
-            let { r, g, b } = data.dominant_color;
-            const lum = calcularLuminancia(r, g, b);
-            if (lum > 0.5) { r = Math.round(r * 0.6); g = Math.round(g * 0.6); b = Math.round(b * 0.6); }
-            telaEl.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+            if (data.dominant_color) {
+                let { r, g, b } = data.dominant_color;
+                const lum = calcularLuminancia(r, g, b);
+                if (lum > 0.5) { r = Math.round(r * 0.6); g = Math.round(g * 0.6); b = Math.round(b * 0.6); }
+                telaEl.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+            }
         }
     } catch (error) {
         console.error('Erro Last.fm:', error);
@@ -195,6 +261,7 @@ function iniciarAtualizacaoAutomatica(user) {
     intervaloAtualizacao = setInterval(() => carregarLastFm(alvo, true), 2000); 
 }
 
+// --- EVENTOS DOS BOTÕES ---
 if (opcaoPesquisar) {
     opcaoPesquisar.addEventListener('click', (e) => {
         e.stopPropagation();

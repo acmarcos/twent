@@ -20,6 +20,10 @@ cache_aritra = {}
 
 ARITRA_API = "https://api.aritra.ovh/v1"
 
+# ============================================
+# FUNÇÕES AUXILIARES
+# ============================================
+
 def calcular_cor_dominante(url_imagem):
     try:
         with urllib.request.urlopen(url_imagem, timeout=5) as resp:
@@ -175,7 +179,9 @@ def buscar_capa_estatica(artist, album):
         pass
     return None
 
-# --- ROTAS ---
+# ============================================
+# ROTAS DE ARQUIVOS
+# ============================================
 
 @app.route('/')
 def home():
@@ -197,9 +203,17 @@ def servir_js():
 def servir_last():
     return send_from_directory('static', 'last.svg')
 
+@app.route('/overlay.png')
+def servir_overlay():
+    return send_from_directory('static', 'overlay.png')
+
 @app.route('/fonts/<path:nome>')
 def servir_font(nome):
     return send_from_directory('static/fonts', nome)
+
+# ============================================
+# ROTA DO LAST.FM
+# ============================================
 
 @app.route('/api/lastfm/now-playing')
 def lastfm_now_playing():
@@ -295,6 +309,37 @@ def lastfm_now_playing():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+# ============================================
+# ROTA DE RECOMENDAÇÕES (CARROSSEL)
+# ============================================
+
+@app.route('/api/recomendacoes')
+def recomendacoes():
+    artist = request.args.get('artist', '')
+    if not artist:
+        return jsonify({"error": "Artista não fornecido"}), 400
+
+    try:
+        url = f"https://itunes.apple.com/search?term={artist}&entity=song&limit=10&sort=popular"
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        resp = requests.get(url, headers=headers, timeout=10).json()
+        
+        resultados = []
+        for item in resp.get('results', []):
+            resultados.append({
+                "trackName": item.get('trackName', ''),
+                "artistName": item.get('artistName', ''),
+                "artworkUrl100": item.get('artworkUrl100', '')
+            })
+        
+        return jsonify(resultados)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# ============================================
+# INICIALIZAÇÃO
+# ============================================
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000, host='0.0.0.0')

@@ -18,7 +18,6 @@
         </div>
 
         <div class="info-musica-container">
-            <!-- Foto do usuário + "está ouvindo:" -->
             <div class="status-lastfm">
                 <div class="foto-usuario-wrapper">
                     <img id="foto-usuario" src="" alt="" style="display: none;">
@@ -28,7 +27,6 @@
                 </span>
             </div>
 
-            <!-- Título e Artista -->
             <div class="info-musica">
                 <div class="titulo-wrapper">
                     <h1 id="musica"></h1>
@@ -36,12 +34,18 @@
                 <p id="artista"></p>
             </div>
 
-            <!-- Ícone do Last.fm + Bolinha + Scrobbles -->
             <div class="scrobbles-container" id="scrobbles-container" style="display: none;">
-                <!-- Apenas a bolinha branca com o recorte -->
                 <div class="icone-lastfm-wrapper"></div>
                 <div class="separador-bolinha"></div>
                 <span id="total-scrobbles">0 scrobbles</span>
+            </div>
+
+            <!-- CARROSSEL DE RECOMENDAÇÕES (SUBSTITUI AS LETRAS) -->
+            <div class="carrossel-container" id="carrossel-container" style="display: none;">
+                <div class="carrossel-titulo">Você também pode gostar</div>
+                <div class="carrossel-scroll" id="carrossel-scroll">
+                    <!-- Os itens serão inseridos via JS -->
+                </div>
             </div>
         </div>
     </div>
