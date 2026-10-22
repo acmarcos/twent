@@ -17,8 +17,10 @@ const modalPesquisa = document.getElementById('modal-pesquisa');
 const inputBusca = document.getElementById('input-busca');
 const btnPesquisarConfirmar = document.getElementById('btn-pesquisar-confirmar');
 
-const carrosselContainer = document.getElementById('carrossel-container');
-const carrosselScrollEl = document.getElementById('carrossel-scroll');
+const recomendacoesWrapper = document.getElementById('recomendacoes-wrapper');
+const recomendacoesViewport = document.getElementById('recomendacoes-viewport');
+const recomendacoesTrack = document.getElementById('recomendacoes-track');
+const assistiveEl = document.getElementById('assistive');
 
 const IS_LOCAL = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
 const SERVER_URL = IS_LOCAL ? 'http://127.0.0.1:5000' : window.location.origin;
@@ -34,6 +36,12 @@ let urlVideoAtual = null;
 let videoEstaTocando = false;
 let frameCapturado = false;
 let loopTimer = null;
+
+let assistenteVisivel = false;
+
+// Variáveis do carrossel
+let indiceAtual = 0;
+let totalCards = 0;
 
 function calcularLuminancia(r, g, b) {
     const canais = [r, g, b].map(v => {
@@ -134,30 +142,92 @@ function tocarCapaPadrao(staticUrl, videoUrl) {
     }
 }
 
-// --- CARREGAR CARROSSEL DE RECOMENDAÇÕES ---
-async function carregarCarrossel(artist) {
-    if (!carrosselScrollEl) return;
-    carrosselScrollEl.innerHTML = '';
-    carrosselContainer.style.display = 'none';
+// --- FUNÇÃO PARA IR PARA UM CARD ---
+function irParaCard(index) {
+    if (index < 0 || index >= totalCards) return;
+    
+    indiceAtual = index;
+    const offset = -indiceAtual * 100;
+    recomendacoesTrack.style.transform = `translateX(${offset}%)`;
+    
+    const cards = recomendacoesTrack.querySelectorAll('.card-item');
+    cards.forEach((card, i) => {
+        card.classList.toggle('ativo', i === indiceAtual);
+    });
+}
 
-    if (!artist) return;
+// --- SWIPE HORIZONTAL (arrastar para a esquerda = próximo card) ---
+let touchStartX = 0;
+let touchStartY = 0;
+let touchMovendo = false;
+let mouseStartX = 0;
+
+if (recomendacoesViewport) {
+    recomendacoesViewport.addEventListener('touchstart', (e) => {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        touchMovendo = false;
+    }, { passive: true });
+
+    recomendacoesViewport.addEventListener('touchmove', (e) => {
+        if (touchMovendo) return;
+        
+        const deltaX = touchStartX - e.touches[0].clientX;
+        const deltaY = touchStartY - e.touches[0].clientY;
+        
+        if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY)) {
+            touchMovendo = true;
+            
+            if (deltaX > 0) {
+                // Arrastou para a ESQUERDA: próximo card (vem da direita)
+                irParaCard(indiceAtual + 1);
+            } else {
+                // Arrastou para a DIREITA: card anterior (vem da esquerda)
+                irParaCard(indiceAtual - 1);
+            }
+        }
+    }, { passive: true });
+
+    // Suporte para desktop (mouse)
+    recomendacoesViewport.addEventListener('mousedown', (e) => {
+        mouseStartX = e.clientX;
+    });
+
+    recomendacoesViewport.addEventListener('mouseup', (e) => {
+        const deltaX = mouseStartX - e.clientX;
+        if (deltaX > 40) {
+            irParaCard(indiceAtual + 1);
+        } else if (deltaX < -40) {
+            irParaCard(indiceAtual - 1);
+        }
+    });
+}
+
+// --- CARREGAR RECOMENDAÇÕES ---
+async function carregarRecomendacoes(artist) {
+    if (!artist) {
+        recomendacoesWrapper.style.display = 'none';
+        return;
+    }
 
     try {
         const response = await fetch(`${SERVER_URL}/api/recomendacoes?artist=${encodeURIComponent(artist)}`);
         const data = await response.json();
-
+        
         if (data.length > 0) {
-            carrosselContainer.style.display = 'flex';
-            
-            data.forEach(item => {
+            recomendacoesWrapper.style.display = 'flex';
+            recomendacoesTrack.innerHTML = '';
+
+            data.forEach((item, index) => {
                 const link = document.createElement('a');
-                link.className = 'carrossel-item';
+                link.className = 'card-item';
+                if (index === 0) link.classList.add('ativo');
                 link.href = `https://music.youtube.com/search?q=${encodeURIComponent(item.trackName + ' ' + item.artistName)}`;
                 link.target = '_blank';
                 link.rel = 'noopener noreferrer';
 
                 const capaWrapper = document.createElement('div');
-                capaWrapper.className = 'carrossel-capa-wrapper';
+                capaWrapper.className = 'card-capa-wrapper';
 
                 const img = document.createElement('img');
                 img.src = item.artworkUrl100.replace('100x100', '300x300');
@@ -170,14 +240,14 @@ async function carregarCarrossel(artist) {
                 capaWrapper.appendChild(overlay);
 
                 const info = document.createElement('div');
-                info.className = 'carrossel-info';
+                info.className = 'card-info';
 
                 const titulo = document.createElement('span');
-                titulo.className = 'carrossel-info-titulo';
+                titulo.className = 'card-info-titulo';
                 titulo.textContent = item.trackName;
 
                 const artista = document.createElement('span');
-                artista.className = 'carrossel-info-artista';
+                artista.className = 'card-info-artista';
                 artista.textContent = item.artistName;
 
                 info.appendChild(titulo);
@@ -185,14 +255,22 @@ async function carregarCarrossel(artist) {
 
                 link.appendChild(capaWrapper);
                 link.appendChild(info);
-                carrosselScrollEl.appendChild(link);
+                recomendacoesTrack.appendChild(link);
             });
+
+            totalCards = data.length;
+            indiceAtual = 0;
+            recomendacoesTrack.style.transform = 'translateX(0%)';
+        } else {
+            recomendacoesWrapper.style.display = 'none';
         }
     } catch (e) {
-        console.error("Erro ao carregar carrossel:", e);
+        console.error("Erro ao carregar recomendações:", e);
+        recomendacoesWrapper.style.display = 'none';
     }
 }
 
+// --- FUNÇÃO PRINCIPAL DO LAST.FM ---
 async function carregarLastFm(userEspecifico = null, forcar = false) {
     const user = userEspecifico || usuarioAtual || inputBusca.value.trim();
     if (!user) return;
@@ -233,8 +311,12 @@ async function carregarLastFm(userEspecifico = null, forcar = false) {
 
             tocarCapaPadrao(data.static_url, data.video_url);
 
-            // Carrega o carrossel
-            await carregarCarrossel(data.artist);
+            await carregarRecomendacoes(data.artist);
+
+            if (data.track && data.artist) {
+                assistiveEl.classList.add('oculto');
+                assistenteVisivel = false;
+            }
 
             if (data.dominant_color) {
                 let { r, g, b } = data.dominant_color;
@@ -257,6 +339,8 @@ function iniciarAtualizacaoAutomatica(user) {
     urlVideoAtual = null;
     videoEstaTocando = false;
     if (loopTimer) { clearInterval(loopTimer); loopTimer = null; }
+    assistiveEl.classList.remove('oculto');
+    assistenteVisivel = true;
     carregarLastFm(alvo, true);
     intervaloAtualizacao = setInterval(() => carregarLastFm(alvo, true), 2000); 
 }
@@ -311,3 +395,15 @@ if (modalPesquisa) {
         }
     });
 }
+
+// --- MOSTRAR O ASSISTENTE NOVAMENTE AO TOCAR NA TELA ---
+document.addEventListener('click', (e) => {
+    if (recomendacoesWrapper.contains(e.target) || assistiveEl.contains(e.target)) {
+        return;
+    }
+    
+    if (!assistenteVisivel) {
+        assistiveEl.classList.remove('oculto');
+        assistenteVisivel = true;
+    }
+}, { passive: true });

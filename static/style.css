@@ -340,81 +340,83 @@ body {
 }
 
 /* ============================================ */
-/* CARROSSEL DE RECOMENDAÇÕES */
+/* RECOMENDAÇÕES COM SWIPE HORIZONTAL */
 /* ============================================ */
 
-.carrossel-container {
+.recomendacoes-wrapper {
+    position: fixed;
+    bottom: 20px;
+    left: 0;
     width: 100%;
-    margin-top: 20px;
+    padding: 0 1.5rem;
+    z-index: 5;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    flex-shrink: 0;
-    overflow: hidden;
+    box-sizing: border-box;
 }
 
-.carrossel-titulo {
-    font-family: 'MinhaFonteBold', system-ui, sans-serif;
-    font-size: 11pt;
-    font-weight: 700;
+.recomendacoes-titulo {
+    font-family: 'MinhaFonteRegular', system-ui, sans-serif;
+    font-size: 9pt;
+    font-weight: 400;
     color: rgba(255, 255, 255, 0.9);
     margin-bottom: 10px;
     padding-left: 2px;
 }
 
-.carrossel-scroll {
-    display: flex;
-    gap: 12px;
+.recomendacoes-viewport {
     width: 100%;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-snap-type: x mandatory;
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    padding-bottom: 10px;
-    padding-left: 2px;
+    height: 90px;
+    overflow: hidden;
+    position: relative;
 }
 
-.carrossel-scroll::-webkit-scrollbar {
-    display: none;
-}
-
-.carrossel-item {
-    flex: 0 0 auto;
-    width: 110px;
-    scroll-snap-align: start;
+.recomendacoes-track {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    height: 100%;
+    transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: transform;
+}
+
+.card-item {
+    flex: 0 0 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
     align-items: center;
-    cursor: pointer;
+    gap: 12px;
     text-decoration: none;
     color: inherit;
-    transition: transform 0.2s ease;
+    cursor: pointer;
+    opacity: 0.3;
+    transition: opacity 0.35s ease;
+    padding: 0;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
-.carrossel-item:active {
-    transform: scale(0.95);
+.card-item.ativo {
+    opacity: 1;
 }
 
-.carrossel-capa-wrapper {
-    width: 110px;
-    height: 110px;
+.card-capa-wrapper {
+    width: 80px;
+    height: 80px;
     position: relative;
     border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    flex-shrink: 0;
 }
 
-.carrossel-capa-wrapper img {
+.card-capa-wrapper img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
 }
 
-.carrossel-capa-wrapper .overlay {
+.card-capa-wrapper .overlay {
     position: absolute;
     top: 0;
     left: 0;
@@ -427,28 +429,35 @@ body {
     pointer-events: none;
 }
 
-.carrossel-info {
-    margin-top: 6px;
-    text-align: center;
-    width: 100%;
-    padding: 0 4px;
+.card-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: left;
+    flex: 1;
+    min-width: 0;
 }
 
-.carrossel-info-titulo {
-    font-family: 'MinhaFonteMedium', system-ui, sans-serif;
-    font-size: 9pt;
-    font-weight: 500;
+/* FADE OUT NO TÍTULO DA MÚSICA */
+.card-info-titulo {
+    font-family: 'MinhaFonteBold', system-ui, sans-serif;
+    font-size: 10pt;
+    font-weight: 700;
     color: #fff;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     width: 100%;
     display: block;
+    -webkit-mask-image: linear-gradient(to right, black 80%, transparent 100%);
+    mask-image: linear-gradient(to right, black 80%, transparent 100%);
 }
 
-.carrossel-info-artista {
+/* FADE OUT NO NOME DO ARTISTA */
+.card-info-artista {
     font-family: 'MinhaFonteRegular', system-ui, sans-serif;
-    font-size: 8pt;
+    font-size: 9pt;
+    font-weight: 400;
     color: rgba(255, 255, 255, 0.6);
     white-space: nowrap;
     overflow: hidden;
@@ -456,17 +465,18 @@ body {
     width: 100%;
     display: block;
     margin-top: 2px;
+    -webkit-mask-image: linear-gradient(to right, black 80%, transparent 100%);
+    mask-image: linear-gradient(to right, black 80%, transparent 100%);
 }
 
 /* ============================================ */
-/* ASSISTENTE (PAINEL DEITADO EMBAIXO) */
+/* ASSISTENTE (CANTO SUPERIOR DIREITO) */
 /* ============================================ */
 
 .assistive {
     position: fixed;
-    bottom: 2rem;
-    left: 50%;
-    transform: translateX(-50%);
+    top: 1.5rem;
+    right: 1.5rem;
     z-index: 50;
     display: flex;
     align-items: center;
@@ -474,6 +484,13 @@ body {
     user-select: none;
     opacity: 1; 
     pointer-events: auto;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.assistive.oculto {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-20px);
 }
 
 .assistive-painel {
@@ -485,8 +502,8 @@ body {
     -webkit-backdrop-filter: blur(16px) saturate(1.5);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 25px;
-    width: 140px; 
-    height: 44px;
+    width: 100px; 
+    height: 40px;
     position: relative;
 }
 
@@ -505,7 +522,7 @@ body {
     border: none;
     background: transparent; 
     color: #fff;
-    font-size: 1.1rem;
+    font-size: 1rem;
     cursor: pointer;
     display: flex;
     align-items: center;
