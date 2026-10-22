@@ -296,48 +296,51 @@ body {
 /* --- BASE: LAST.FM + SCROBBLES --- */
 .scrobbles-container {
     display: flex;
-    align-items: center;
+    align-items: center; 
     gap: 6px;
     margin-top: 8px;
     font-family: 'MinhaFonteBold', system-ui, sans-serif;
     font-size: var(--ouvindo-tamanho);
     color: rgba(255, 255, 255, 0.6);
+    padding-left: 0; 
 }
 
-/* ÍCONE DO LAST.FM COM FUNDO BRANCO E RECORTE */
+/* O ÍCONE DO LAST.FM (12x12, branco, desenhado direto no wrapper) */
 .icone-lastfm-wrapper {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    width: 12px; 
+    height: 12px;
     flex-shrink: 0;
-    width: 14px; 
-    height: 14px;
     background: #ffffff;
-    border-radius: 50%;
     
+    /* O SVG é aplicado como máscara */
     -webkit-mask-image: url('last.svg');
     mask-image: url('last.svg');
-    -webkit-mask-size: 10px 10px;
-    mask-size: 10px 10px;
+    -webkit-mask-size: contain;
+    mask-size: contain;
     -webkit-mask-repeat: no-repeat;
     mask-repeat: no-repeat;
     -webkit-mask-position: center;
     mask-position: center;
 }
 
+/* A bolinha separadora */
 .separador-bolinha {
     width: 3px; 
     height: 3px; 
     border-radius: 50%; 
     background: rgba(255, 255, 255, 0.4);
+    flex-shrink: 0;
+    margin-top: 1px; 
 }
 
+/* Texto dos scrobbles */
 #total-scrobbles {
     font-family: 'MinhaFonteBold', system-ui, sans-serif; 
     font-weight: 700; 
     display: flex;
     align-items: center;
-    line-height: 1.2;
+    line-height: 1; 
+    margin-top: 0;
 }
 
 /* ============================================ */
